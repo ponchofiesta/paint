@@ -1,0 +1,33 @@
+.tools {
+    width: 40px;
+}
+.tools:after {
+    content: ' ';
+    clear: both;
+}
+.tools * {
+    height: 24px;
+    width: 24px;
+    float: left;
+    border: 1px solid grey;
+    background: no-repeat center;
+    margin: 1px;
+}
+.tools .pipette {
+    background-image: url("icons/ColorPickerToolIcon.png");
+}
+.tools .mark {
+    background-image: url("icons/SelectionIcon.png");
+}
+.tools .text {
+    background-image: url("icons/TextToolIcon.png");
+}
+.tools .gradient {
+    background-image: url("icons/LinearClampedGradientIcon.png");
+}
+.tools .fill {
+    background-image: url("icons/PaintBucketIcon.png");
+}
+.tools .pen {
+    background-image: url("icons/PencilToolIcon.png");
+}
