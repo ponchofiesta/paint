@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:html';
+import 'dart:js' as js;
 
 import 'package:angular/angular.dart';
-import 'package:js_proxy/js_proxy.dart';
+//import 'package:js/js.dart' as js;
 
 import 'paint_service.dart';
 
@@ -12,14 +13,14 @@ import 'paint_service.dart';
   styleUrls: const ['paint_component.css'],
   templateUrl: 'paint_component.html',
   directives: const [
-    CORE_DIRECTIVES,
+    //CORE_DIRECTIVES,
     const [NgClass]
   ],
   providers: const [PaintService],
 )
 class PaintComponent implements OnInit {
   final PaintService paintService;
-  var $ = new JProxy.fromContext('jQuery');
+  //var $ = new JProxy.fromContext('jQuery');
 
   var penSize = 10;
   var activeTool = 'mark';
@@ -30,27 +31,34 @@ class PaintComponent implements OnInit {
   @override
   Future<Null> ngOnInit() async {
 
-    // tools: pen popup
-    $('.tools .pen').popup({
-      'popup': $('.pen.popup'),
+    js.context.callMethod(r'$', ['.tools .pen']).callMethod('popup', [{
+      'popup': js.context.callMethod(r'$', ['.pen.popup']),
       'on': 'click',
       'hoverable': true,
       'position': 'right center'
-    });
+    }]);
+
+    // tools: pen popup
+//    $('.tools .pen').popup({
+//      'popup': $('.pen.popup'),
+//      'on': 'click',
+//      'hoverable': true,
+//      'position': 'right center'
+//    });
 
     // tools: default color
     //$('.tools input[type="color"]').val('#fff');
   }
 
   void newImage() {
-    $('#new-image-modal').modal({
-      'onApprove': (element){
-        var form = $('#new-image-modal form');
-        num width = form.find('input[name="width"]').val();
-        num height = form.find('input[name="height"]').val();
-        createImage(width, height);
-      }
-    }).modal("show");
+//    $('#new-image-modal').modal({
+//      'onApprove': (element){
+//        var form = $('#new-image-modal form');
+//        num width = form.find('input[name="width"]').val();
+//        num height = form.find('input[name="height"]').val();
+//        createImage(width, height);
+//      }
+//    }).modal("show");
   }
 
   void createImage(num width, num height) {
@@ -60,8 +68,8 @@ class PaintComponent implements OnInit {
     newCanvas.height = height;
     newCanvas.id = "canvas";
     canvasDiv.innerHtml = "";
-    newCanvas.onMouseEnter.listen(mouseOverCanvas);
-    newCanvas.onMouseLeave.listen(mouseOverCanvas);
+    //newCanvas.onMouseEnter.listen(mouseOverCanvas);
+    //newCanvas.onMouseLeave.listen(mouseOverCanvas);
     canvasDiv.append(newCanvas);
   }
 
