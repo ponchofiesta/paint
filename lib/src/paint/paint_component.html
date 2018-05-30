@@ -7,21 +7,21 @@
 <div class="main-wrapper">
 
     <div class="tools">
-        <a class="ui basic icon button mark" [ngClass]="{ active: activeTool === 'mark' }" (click)="setActiveTool('mark')"><i class="icon"></i></a>
-        <a class="ui basic icon button text" [ngClass]="{ active: activeTool === 'text' }" (click)="setActiveTool('text')"><i class="icon"></i></a>
-        <a class="ui basic icon button pen" [ngClass]="{ active: activeTool === 'pen' }" (click)="setActiveTool('pen')"><i class="icon"></i></a>
+        <a class="ui basic icon button mark" [ngClass]="{ 'active': activeTool === 'mark' }" (click)="setActiveTool('mark')"><i class="icon"></i></a>
+        <a class="ui basic icon button text" [ngClass]="{ 'active': activeTool === 'text' }" (click)="setActiveTool('text')"><i class="icon"></i></a>
+        <a class="ui basic icon button pen" [ngClass]="{ 'active': activeTool === 'pen' }" (click)="setActiveTool('pen')"><i class="icon"></i></a>
         <div class="ui popup pen">
-            <input type="range" min="1" max="100" (change)="penSize = $event.target.value" [value]="penSize">
+            <input type="range" min="1" max="100" (change)="setPenSize($event.target.valueAsNumber)" [value]="penSize.toString()">
             <div class="pen-preview" [ngStyle]="{'width': penSize.toString()+'px', 'height': penSize.toString()+'px'}"></div>
         </div>
-        <a class="ui basic icon button pipette" [ngClass]="{ active: activeTool === 'pipette' }" (click)="setActiveTool('pipette')"><i class="icon"></i></a>
-        <a class="ui basic icon button fill" [ngClass]="{ active: activeTool === 'fill' }" (click)="setActiveTool('fill')"><i class="icon"></i></a>
-        <a class="ui basic icon button gradient" [ngClass]="{ active: activeTool === 'gradient' }" (click)="setActiveTool('gradient')"><i class="icon"></i></a>
+        <a class="ui basic icon button pipette" [ngClass]="{ 'active': activeTool === 'pipette' }" (click)="setActiveTool('pipette')"><i class="icon"></i></a>
+        <a class="ui basic icon button fill" [ngClass]="{ 'active': activeTool === 'fill' }" (click)="setActiveTool('fill')"><i class="icon"></i></a>
+        <a class="ui basic icon button gradient" [ngClass]="{ 'active': activeTool === 'gradient' }" (click)="setActiveTool('gradient')"><i class="icon"></i></a>
         <input class="ui basic icon button color" type="color" [value]="'rgb('+color[0].toString()+','+color[1].toString()+','+color[2].toString()+')'">
     </div>
 
     <div class="canvas chess-bg">
-        <canvas id="canvas" width="480" height="320" (mouseenter)="mouseOverCanvas($event)" (mouseleave)="mouseOverCanvas()"></canvas>
+        <canvas id="canvas"></canvas>
     </div>
 
 </div>
