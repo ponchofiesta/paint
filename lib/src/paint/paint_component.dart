@@ -28,8 +28,13 @@ class PaintComponent implements OnInit {
   int penSize = 10;
   String activeTool = 'mark';
   Color color = new Color(0, 0, 0, 255);
-
+  Point mousePosition = new Point(0, 0);
   bool isMouseDown = false;
+
+  String font = 'Arial';
+  int fontSize = 12;
+  String fontStyle = 'normal';
+
 
   //PaintComponent(this.paintService);
 
@@ -49,10 +54,14 @@ class PaintComponent implements OnInit {
           'position': 'right center'
         })]);
 
-    // tools: default color
+    // tools: text tool chooser
     context
-        .callMethod(r'$', ['.tools input[type="color"]'])
-        .callMethod('val', ['#fff']);
+        .callMethod(r'$', ['.ui.dropdown'])
+        .callMethod('dropdown');
+
+    // tools: default color
+    (querySelector('.tools input[type="color"]') as InputElement).value = '#fff';
+
   }
 
   void newImage() {
@@ -93,30 +102,31 @@ class PaintComponent implements OnInit {
     a.href = canvas.toDataUrl();
   }
 
-  void setActiveTool(String tool) {
-    activeTool = tool;
-  }
-
-  void setPenSize(int size) {
-    penSize = size;
-  }
-
   void mouseOverCanvas(MouseEvent event) {
     if (activeTool == 'pen') {
       // TODO show pen cursor
     }
   }
 
-
   void mouseDownCanvas(MouseEvent event) {
     isMouseDown = true;
-    Point position = getMousePositionOnCanvas(event);
+    mousePosition = getMousePositionOnCanvas(event);
     switch (activeTool) {
       case 'pen':
-        canvas.penStart(position, penSize, color);
+        canvas.penStart(mousePosition, penSize, color);
         break;
       case 'pipette':
-        color = canvas.pipette(position);
+        color = canvas.pipette(mousePosition);
+        break;
+      case 'text':
+        var textTool = querySelector('#text-tool');
+        (textTool.querySelector('input[name="text"]') as InputElement).value = '';
+        textTool.style
+          ..left = '${event.client.x}px'
+          ..top = '${event.client.y}px';
+        textTool
+          ..classes.remove('hidden')
+          ..querySelector('input[name="text"]').focus();
         break;
     }
   }
@@ -127,13 +137,13 @@ class PaintComponent implements OnInit {
 
   void mouseMoveCanvas(MouseEvent event) {
     if (isMouseDown) {
-      Point position = getMousePositionOnCanvas(event);
+      mousePosition = getMousePositionOnCanvas(event);
       switch (activeTool) {
         case 'pen':
-          canvas.penMove(position);
+          canvas.penMove(mousePosition);
           break;
         case 'pipette':
-          color = canvas.pipette(position);
+          color = canvas.pipette(mousePosition);
           break;
       }
     }
@@ -144,6 +154,18 @@ class PaintComponent implements OnInit {
         event.client.x - canvas.canvas.documentOffset.x,
         event.client.y - canvas.canvas.documentOffset.y
     );
+  }
+
+  void textInsert() {
+    var textTool = querySelector('#text-tool');
+    textTool.classes.add('hidden');
+    var text = (textTool.querySelector('input[name="text"]') as InputElement).value;
+    canvas.textInsert(text, mousePosition, font, 'italic', color, fontSize);
+  }
+
+  void textCancel() {
+    var textTool = querySelector('#text-tool');
+    textTool.classes.add('hidden');
   }
 
 }

@@ -78,3 +78,18 @@ div.canvas {
     background-size: 20px 20px;
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }
+
+#text-tool {
+    position: absolute;
+}
+#text-tool input[name="text"] {
+    margin: 0;
+    padding: 0;
+    border: 1px dashed cornflowerblue;
+    background-color: transparent;
+    outline: none;
+}
+
+.hidden {
+    display: none;
+}

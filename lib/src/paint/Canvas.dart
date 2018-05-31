@@ -39,4 +39,11 @@ class Canvas {
     var pixel = ctx.getImageData(position.x, position.y, 1, 1).data;
     return new Color(pixel[0], pixel[1], pixel[2], pixel[3]);
   }
+
+  void textInsert(String text, Point position, String font, String style, Color color, int size) {
+    ctx
+      ..font = '${size}px ${font} ${style}'
+      ..fillStyle = color.toRgba()
+      ..fillText(text, position.x, position.y + size);
+  }
 }
