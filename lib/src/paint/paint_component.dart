@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:html';
 import 'dart:js';
+import 'dart:math';
 
 import 'package:angular/angular.dart';
+import 'package:paint/src/paint/Color.dart';
 
 //import 'paint_service.dart';
 import 'Canvas.dart';
@@ -25,7 +27,7 @@ class PaintComponent implements OnInit {
 
   int penSize = 10;
   String activeTool = 'mark';
-  List<int> color = [255, 255, 255];
+  Color color = new Color(0, 0, 0, 255);
 
   bool isMouseDown = false;
 
@@ -58,9 +60,8 @@ class PaintComponent implements OnInit {
         .callMethod(r'$', ['#new-image-modal'])
         .callMethod('modal', [new JsObject.jsify({
           'onApprove': new JsFunction.withThis((element){
-            var form = querySelector('#new-image-modal form');
-            num width = (form.querySelector('input[name="width"]') as InputElement).valueAsNumber;
-            num height = (form.querySelector('input[name="height"]') as InputElement).valueAsNumber;
+            int width = (querySelector('#new-image-modal form input[name="width"]') as InputElement).valueAsNumber;
+            int height = (querySelector('#new-image-modal form input[name="height"]') as InputElement).valueAsNumber;
             createImage(width, height);
           })
         })])
@@ -70,16 +71,18 @@ class PaintComponent implements OnInit {
   void createImage(num width, num height) {
     Element canvasDiv = querySelector("div.canvas");
     CanvasElement newCanvas = new CanvasElement();
-    newCanvas.width = width;
-    newCanvas.height = height;
-    newCanvas.id = "canvas";
-    canvasDiv.innerHtml = "";
-    newCanvas.onMouseEnter.listen(mouseOverCanvas);
-    newCanvas.onMouseLeave.listen(mouseOverCanvas);
-    newCanvas.onMouseDown.listen(mouseDownCanvas);
-    newCanvas.onMouseUp.listen(mouseUpCanvas);
-    newCanvas.onMouseMove.listen(mouseMoveCanvas);
-    canvasDiv.append(newCanvas);
+    newCanvas
+      ..width = width
+      ..height = height
+      ..id = "canvas"
+      ..onMouseEnter.listen(mouseOverCanvas)
+      ..onMouseLeave.listen(mouseOverCanvas)
+      ..onMouseDown.listen(mouseDownCanvas)
+      ..onMouseUp.listen(mouseUpCanvas)
+      ..onMouseMove.listen(mouseMoveCanvas);
+    canvasDiv
+      ..innerHtml = ""
+      ..append(newCanvas);
     this.canvas = new Canvas(newCanvas);
   }
 
@@ -107,6 +110,15 @@ class PaintComponent implements OnInit {
 
   void mouseDownCanvas(MouseEvent event) {
     isMouseDown = true;
+    Point position = getMousePositionOnCanvas(event);
+    switch (activeTool) {
+      case 'pen':
+        canvas.penStart(position, penSize, color);
+        break;
+      case 'pipette':
+        color = canvas.pipette(position);
+        break;
+    }
   }
 
   void mouseUpCanvas(MouseEvent event) {
@@ -115,13 +127,23 @@ class PaintComponent implements OnInit {
 
   void mouseMoveCanvas(MouseEvent event) {
     if (isMouseDown) {
+      Point position = getMousePositionOnCanvas(event);
       switch (activeTool) {
         case 'pen':
-          // TODO get mouse pos
-          canvas.DrawPen();
+          canvas.penMove(position);
+          break;
+        case 'pipette':
+          color = canvas.pipette(position);
           break;
       }
     }
+  }
+
+  Point getMousePositionOnCanvas(MouseEvent event) {
+    return new Point(
+        event.client.x - canvas.canvas.documentOffset.x,
+        event.client.y - canvas.canvas.documentOffset.y
+    );
   }
 
 }
