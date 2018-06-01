@@ -7,17 +7,51 @@
 <div class="main-wrapper">
 
     <div class="tools">
-        <a class="ui basic icon button mark" [ngClass]="{ 'active': activeTool === 'mark' }" (click)="activeTool = 'mark'"><i class="icon"></i></a>
-        <a class="ui basic icon button text" [ngClass]="{ 'active': activeTool === 'text' }" (click)="activeTool = 'text'"><i class="icon"></i></a>
-        <a class="ui basic icon button pen" [ngClass]="{ 'active': activeTool === 'pen' }" (click)="activeTool = 'pen'"><i class="icon"></i></a>
+        <a class="ui basic icon button mark"
+           [ngClass]="{ 'active': activeTool === 'mark' }"
+           (click)="activeTool = 'mark'">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button text"
+           [ngClass]="{ 'active': activeTool === 'text' }"
+           (click)="activeTool = 'text'">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button pen"
+           [ngClass]="{ 'active': activeTool === 'pen' }"
+           (click)="activeTool = 'pen'">
+            <i class="icon"></i>
+        </a>
         <div class="ui popup pen">
-            <input type="range" min="1" max="100" (change)="penSize = $event.target.valueAsNumber" [value]="penSize.toString()">
-            <div class="pen-preview" [ngStyle]="{'width': penSize.toString()+'px', 'height': penSize.toString()+'px'}"></div>
+            <input type="range" min="1" max="100"
+                   (change)="penSize = $event.target.valueAsNumber"
+                   [value]="penSize.toString()">
+            <div class="pen-preview"
+                 [ngStyle]="
+                 {
+                    'width': penSize.toString()+'px',
+                    'height': penSize.toString()+'px'
+                 }">
+            </div>
         </div>
-        <a class="ui basic icon button pipette" [ngClass]="{ 'active': activeTool === 'pipette' }" (click)="activeTool = 'pipette'"><i class="icon"></i></a>
-        <a class="ui basic icon button fill" [ngClass]="{ 'active': activeTool === 'fill' }" (click)="activeTool = 'fill'"><i class="icon"></i></a>
-        <a class="ui basic icon button gradient" [ngClass]="{ 'active': activeTool === 'gradient' }" (click)="activeTool = 'gradient'"><i class="icon"></i></a>
-        <input class="ui basic icon button color" type="color" (change)="color.hex = $event.target.value" [value]="color.hex">
+        <a class="ui basic icon button pipette"
+           [ngClass]="{ 'active': activeTool === 'pipette' }"
+           (click)="activeTool = 'pipette'">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button fill"
+           [ngClass]="{ 'active': activeTool === 'fill' }"
+           (click)="activeTool = 'fill'">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button gradient"
+           [ngClass]="{ 'active': activeTool === 'gradient' }"
+           (click)="activeTool = 'gradient'">
+            <i class="icon"></i>
+        </a>
+        <input class="ui basic icon button color" type="color"
+               (change)="color.hex = $event.target.value"
+               [value]="color.hex">
     </div>
 
     <div class="canvas chess-bg">
@@ -25,6 +59,9 @@
     </div>
 
 </div>
+
+
+<!-- New Image Dialog -->
 
 <div class="ui mini modal" id="new-image-modal">
     <div class="header">Create new image</div>
@@ -46,42 +83,87 @@
     </div>
 </div>
 
+
+<!-- Text Tool -->
+
 <div class="hidden" id="text-tool">
-    <div>
-        <input type="text" name="text">
+    <div class="text">
+        <input type="text" name="text"
+               [ngStyle]="
+               {
+                'font-family': font,
+                'font-size': fontSize.toString()+'px',
+                'font-style': fontStyle,
+                'font-weight': fontWeight,
+                'color': color.hex
+               }"
+               (input)="onTextChange()">
     </div>
     <div class="ui segment">
         <form class="ui form">
             <div class="fields">
                 <div class="ten wide field">
                     <div class="ui fluid selection dropdown">
-                        <input name="font" type="hidden" value="Arial" (change)="font = $event.target.value">
+                        <input name="font" type="hidden" value="Arial"
+                               (change)="setFont($event.target.value)">
                         <i class="dropdown icon"></i>
-                        <div class="text">Default Value</div>
+                        <div class="text" [ngStyle]="{'font-family': font}">Default Value</div>
                         <div class="menu">
-                            <div class="item" data-value="Arial">Arial</div>
-                            <div class="item" data-value="Verdana">Verdana</div>
+                            <div class="item" data-value="Arial"
+                                 style="font-family: Arial">Arial</div>
+                            <div class="item" data-value="Calibri"
+                                 style="font-family: Calibri">Calibri</div>
+                            <div class="item" data-value="Courier New"
+                                 style="font-family: 'Courier New'">Courier New</div>
+                            <div class="item" data-value="Times New Roman"
+                                 style="font-family: 'Times New Roman'">Times New Roman</div>
+                            <div class="item" data-value="Verdana"
+                                 style="font-family: Verdana">Verdana</div>
                         </div>
                     </div>
                 </div>
+                <div class="ui icon buttons font-style">
+                    <button class="ui button bold" (click)="setFontWeight()" type="button">
+                        <i class="bold icon"></i>
+                    </button>
+                    <button class="ui button italic" (click)="setFontStyle()" type="button">
+                        <i class="italic icon"></i>
+                    </button>
+                </div>
                 <div class="six wide field">
                     <div class="ui fluid selection dropdown">
-                        <input name="size" type="hidden" value="12" (change)="fontSize = $event.target.valueAsNumber">
+                        <input name="size" type="hidden" value="12"
+                               (change)="setFontSize($event.target.value)">
                         <i class="dropdown icon"></i>
                         <div class="text">Default Value</div>
                         <div class="menu">
-                            <div class="item" data-value="10">10</div>
-                            <div class="item" data-value="11">11</div>
-                            <div class="item" data-value="12">12</div>
-                            <div class="item" data-value="18">18</div>
+                            <div class="item" data-value="8" style="font-size: 8px">8</div>
+                            <div class="item" data-value="9" style="font-size: 9px">9</div>
+                            <div class="item" data-value="10" style="font-size: 10px">10</div>
+                            <div class="item" data-value="12" style="font-size: 12px">12</div>
+                            <div class="item" data-value="14" style="font-size: 14px">14</div>
+                            <div class="item" data-value="18" style="font-size: 18px">18</div>
+                            <div class="item" data-value="24" style="font-size: 24px">24</div>
+                            <div class="item" data-value="32" style="font-size: 32px">32</div>
+                            <div class="item" data-value="40" style="font-size: 40px">40</div>
+                            <div class="item" data-value="52" style="font-size: 52px">52</div>
                         </div>
                     </div>
                 </div>
             </div>
             <div>
-                <button (click)="textInsert()" class="ui primary button" type="button">Insert here</button>
-                <button (click)="textCancel()" class="ui button" type="button">Cancel</button>
+                <button class="ui primary button" type="button" (click)="textInsert()">
+                    Insert here
+                </button>
+                <button class="ui button" type="button" (click)="textCancel()">
+                    Cancel
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+
+<!-- Mark Tool -->
+
+<div id="mark-tool" class="hidden"></div>

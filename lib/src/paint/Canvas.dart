@@ -40,10 +40,16 @@ class Canvas {
     return new Color(pixel[0], pixel[1], pixel[2], pixel[3]);
   }
 
-  void textInsert(String text, Point position, String font, String style, Color color, int size) {
+  void textInsert(String text, Point position, String font, String style, String weight, Color color, int size) {
     ctx
-      ..font = '${size}px ${font} ${style}'
+      ..textBaseline = 'top'
+      ..font = '${style} ${weight} ${size}px ${font}'
       ..fillStyle = color.toRgba()
-      ..fillText(text, position.x, position.y + size);
+      ..fillText(text, position.x, position.y);
+  }
+
+  double measureString(String text, String font, String style, String weight, int size) {
+    ctx.font = '${style} ${weight} ${size}px ${font}';
+    return ctx.measureText(text).width;
   }
 }

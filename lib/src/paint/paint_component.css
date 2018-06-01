@@ -89,6 +89,18 @@ div.canvas {
     background-color: transparent;
     outline: none;
 }
+#text-tool div.text {
+    line-height: 0;
+}
+
+
+#mark-tool {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+    border: 1px dashed grey;
+}
 
 .hidden {
     display: none;
