@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:html';
 import 'dart:math';
 
-import 'package:paint/src/paint/Color.dart';
+import 'Color.dart';
+import 'filter/AbstractFilter.dart';
+import 'filter/GreyscaleFilter.dart';
 
 class Canvas {
 
@@ -52,4 +55,26 @@ class Canvas {
     ctx.font = '${style} ${weight} ${size}px ${font}';
     return ctx.measureText(text).width;
   }
+
+  void fill(Rectangle rect, Color color) {
+    ctx
+      ..beginPath()
+      ..rect(rect.left, rect.top, rect.width, rect.height)
+      ..fillStyle = color.toRgba()
+      ..fill();
+  }
+
+  void filter(Rectangle rect, String filterName, {Object options}) {
+    var filter = getFilter(filterName);
+    filter.use(rect);
+  }
+
+  AbstractFilter getFilter(String filterName) {
+    switch (filterName) {
+      case 'greyscale':
+        return new GreyscaleFilter(ctx);
+    }
+    throw new Exception("Filter not found");
+  }
+
 }

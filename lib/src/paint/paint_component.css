@@ -13,12 +13,12 @@
 }
 
 .tools {
-    width: 42px;
+    width: 52px;
     padding: 8px;
     flex: 0 0 auto;
 }
 .tools>.button {
-    padding: 4px!important;
+    padding: 8px!important;
     margin: 1px!important;
 }
 .tools i.icon {
@@ -27,9 +27,9 @@
 }
 /* color picker button */
 .tools>input[type="color"] {
-    height: 24px;
-    width: 24px;
-    padding: 1px!important;
+    height: 32px;
+    width: 32px;
+    padding: 4px!important;
 }
 .tools .pipette i {
     background-image: url("icons/ColorPickerToolIcon.png");
@@ -99,7 +99,11 @@ div.canvas {
     margin: 0;
     padding: 0;
     line-height: 0;
-    border: 1px dashed grey;
+    border: 2px dashed grey;
+}
+
+#open-image {
+    display: none;
 }
 
 .hidden {

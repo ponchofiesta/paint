@@ -1,7 +1,23 @@
-<div class="ui menu">
-    <a class="item" (click)="newImage()">New</a>
+<div class="ui teal inverted menu">
+    <div class="active item">
+        <i class="paint brush icon"></i>
+        Paint
+    </div>
+    <a class="item" download="image.png" (click)="newImage()">New</a>
+    <a class="item" (click)="createImage()">Open</a>
     <a class="item" id="saveImage" (click)="saveImage()">Save</a>
-    <a class="item">Filter</a>
+    <div class="ui dropdown item">
+        Edit <i class="dropdown icon"></i>
+        <div class="menu">
+            <a class="item" (click)="fill()">Fill area</a>
+        </div>
+    </div>
+    <div class="ui dropdown item">
+        Filter <i class="dropdown icon"></i>
+        <div class="menu">
+            <a class="item" (click)="filter('greyscale')">Black and white</a>
+        </div>
+    </div>
 </div>
 
 <div class="main-wrapper">
@@ -9,17 +25,17 @@
     <div class="tools">
         <a class="ui basic icon button mark"
            [ngClass]="{ 'active': activeTool === 'mark' }"
-           (click)="activeTool = 'mark'">
+           (click)="setTool('mark')">
             <i class="icon"></i>
         </a>
         <a class="ui basic icon button text"
            [ngClass]="{ 'active': activeTool === 'text' }"
-           (click)="activeTool = 'text'">
+           (click)="setTool('text')">
             <i class="icon"></i>
         </a>
         <a class="ui basic icon button pen"
            [ngClass]="{ 'active': activeTool === 'pen' }"
-           (click)="activeTool = 'pen'">
+           (click)="setTool('pen')">
             <i class="icon"></i>
         </a>
         <div class="ui popup pen">
@@ -36,17 +52,17 @@
         </div>
         <a class="ui basic icon button pipette"
            [ngClass]="{ 'active': activeTool === 'pipette' }"
-           (click)="activeTool = 'pipette'">
+           (click)="setTool('pipette')">
             <i class="icon"></i>
         </a>
         <a class="ui basic icon button fill"
            [ngClass]="{ 'active': activeTool === 'fill' }"
-           (click)="activeTool = 'fill'">
+           (click)="setTool('fill')">
             <i class="icon"></i>
         </a>
         <a class="ui basic icon button gradient"
            [ngClass]="{ 'active': activeTool === 'gradient' }"
-           (click)="activeTool = 'gradient'">
+           (click)="setTool('gradient')">
             <i class="icon"></i>
         </a>
         <input class="ui basic icon button color" type="color"
@@ -167,3 +183,8 @@
 <!-- Mark Tool -->
 
 <div id="mark-tool" class="hidden"></div>
+
+
+<!-- File open helper -->
+
+<input type="file" id="open-image" accept="image/x-png,image/gif,image/jpeg" />

@@ -32,13 +32,13 @@ class Color {
     String hexg;
     String hexb;
     if (hex.length == 4) {
-      hexr = hex[1] + hex[1];
-      hexg = hex[2] + hex[2];
-      hexb = hex[3] + hex[3];
+      hexr = hex[1] * 2;
+      hexg = hex[2] * 2;
+      hexb = hex[3] * 2;
     } else if (hex.length == 7) {
-      hexr = hex.substring(1, 2) + hex.substring(1, 2);
-      hexg = hex.substring(3, 4) + hex.substring(3, 4);
-      hexb = hex.substring(5, 6) + hex.substring(5, 6);
+      hexr = hex.substring(1, 3);
+      hexg = hex.substring(3, 5);
+      hexb = hex.substring(5, 7);
     } else {
       return;
     }
