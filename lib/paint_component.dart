@@ -6,8 +6,8 @@ import 'dart:math';
 
 import 'package:angular/angular.dart';
 
-import 'Color.dart';
-import 'Canvas.dart';
+import 'package:paint/src/Canvas.dart';
+import 'package:paint/src/Color.dart';
 
 @Component(
   selector: 'paint',
@@ -24,6 +24,7 @@ class PaintComponent implements OnInit {
   Canvas canvas;
 
   int penSize = 10;
+  int filterSize = 10;
   String activeTool = 'mark';
   bool isToolShown = false;
   Color color = new Color(0, 0, 0, 255);
@@ -53,6 +54,16 @@ class PaintComponent implements OnInit {
           'hoverable': true,
           'position': 'right center'
         })]);
+
+    // tools: rubber popup
+    context
+        .callMethod(r'$', ['.tools .rubber'])
+        .callMethod('popup', [new JsObject.jsify({
+      'popup': context.callMethod(r'$', ['.pen.popup']),
+      'on': 'click',
+      'hoverable': true,
+      'position': 'right center'
+    })]);
 
     // tools: text tool chooser
     context
@@ -161,23 +172,30 @@ class PaintComponent implements OnInit {
         break;
 
       case 'mark':
-        var markTool = querySelector('#mark-tool');
-        if (markTool.classes.contains('hidden')) {
-          // start new marker
-          markPositionStart = event.client;
-          markTool.style
-            ..left = '${markPositionStart.x}px'
-            ..top = '${markPositionStart.y}px'
-            ..width = '0'
-            ..height = '0';
-          markRect = new Rectangle(0, 0, 0, 0);
-          markTool.classes.remove('hidden');
-        } else {
-          // clear marker
-          markTool.classes.add('hidden');
-        }
-
+        markMouseDownCanvas(event);
         break;
+
+      case 'rubber':
+        canvas.rubberStart(mousePosition, penSize);
+        break;
+    }
+  }
+
+  void markMouseDownCanvas(MouseEvent event) {
+    var markTool = querySelector('#mark-tool');
+    if (markTool.classes.contains('hidden')) {
+      // start new marker
+      markPositionStart = event.client;
+      markTool.style
+        ..left = '${markPositionStart.x}px'
+        ..top = '${markPositionStart.y}px'
+        ..width = '0'
+        ..height = '0';
+      markRect = new Rectangle(0, 0, 0, 0);
+      markTool.classes.remove('hidden');
+    } else {
+      // clear marker
+      markTool.classes.add('hidden');
     }
   }
 
@@ -202,69 +220,77 @@ class PaintComponent implements OnInit {
           break;
 
         case 'mark':
-          var markTool = querySelector('#mark-tool');
-          if (markTool.classes.contains('hidden')) {
-            break;
-          }
+          markSet(event);
+          break;
 
-          var left = 0;
-          var top = 0;
-          var width = 0;
-          var height = 0;
-
-          // set border limits for marker
-          if (event.client.x < markPositionStart.x) {
-            if (event.client.x < canvas.canvas.documentOffset.x) {
-              left = canvas.canvas.documentOffset.x;
-              width = markPositionStart.x - canvas.canvas.documentOffset.x;
-            } else {
-              left = event.client.x;
-              width = markPositionStart.x - event.client.x;
-            }
-          } else {
-            if (event.client.x > canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth) {
-              left = markPositionStart.x;
-              width = canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth - markPositionStart.x;
-            } else {
-              left = markPositionStart.x;
-              width = event.client.x - markPositionStart.x;
-            }
-          }
-          if (event.client.y < markPositionStart.y) {
-            if (event.client.y < canvas.canvas.documentOffset.y) {
-              top = canvas.canvas.documentOffset.y;
-              height = markPositionStart.y - canvas.canvas.documentOffset.y;
-            } else {
-              top = event.client.y;
-              height = markPositionStart.y - event.client.y;
-            }
-          } else {
-            if (event.client.y > canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight) {
-              top = markPositionStart.y;
-              height = canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight - markPositionStart.y;
-            } else {
-              top = markPositionStart.y;
-              height = event.client.y - markPositionStart.y;
-            }
-          }
-
-          // visual marker position
-          markTool.style
-            ..left = '${left}px'
-            ..top = '${top}px'
-            ..width = '${width}px'
-            ..height = '${height}px';
-
-          // rect
-          markRect = new Rectangle(
-            markTool.documentOffset.x - canvas.canvas.documentOffset.x,
-            markTool.documentOffset.y - canvas.canvas.documentOffset.y,
-            markTool.offsetWidth,
-            markTool.offsetHeight
-          );
+        case 'rubber':
+          canvas.rubberMove(mousePosition);
           break;
       }
     }
+  }
+
+  void markSet(MouseEvent event) {
+    var markTool = querySelector('#mark-tool');
+    if (markTool.classes.contains('hidden')) {
+      return;
+    }
+
+    var left = 0;
+    var top = 0;
+    var width = 0;
+    var height = 0;
+
+    // set border limits for marker
+    if (event.client.x < markPositionStart.x) {
+      if (event.client.x < canvas.canvas.documentOffset.x) {
+        left = canvas.canvas.documentOffset.x;
+        width = markPositionStart.x - canvas.canvas.documentOffset.x;
+      } else {
+        left = event.client.x;
+        width = markPositionStart.x - event.client.x;
+      }
+    } else {
+      if (event.client.x > canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth) {
+        left = markPositionStart.x;
+        width = canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth - markPositionStart.x;
+      } else {
+        left = markPositionStart.x;
+        width = event.client.x - markPositionStart.x;
+      }
+    }
+    if (event.client.y < markPositionStart.y) {
+      if (event.client.y < canvas.canvas.documentOffset.y) {
+        top = canvas.canvas.documentOffset.y;
+        height = markPositionStart.y - canvas.canvas.documentOffset.y;
+      } else {
+        top = event.client.y;
+        height = markPositionStart.y - event.client.y;
+      }
+    } else {
+      if (event.client.y > canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight) {
+        top = markPositionStart.y;
+        height = canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight - markPositionStart.y;
+      } else {
+        top = markPositionStart.y;
+        height = event.client.y - markPositionStart.y;
+      }
+    }
+
+    // visual marker position
+    markTool.style
+      ..left = '${left}px'
+      ..top = '${top}px'
+      ..width = '${width}px'
+      ..height = '${height}px';
+
+    // rect
+    markRect = new Rectangle(
+      markTool.documentOffset.x - canvas.canvas.documentOffset.x,
+      markTool.documentOffset.y - canvas.canvas.documentOffset.y,
+      markTool.offsetWidth,
+      markTool.offsetHeight
+    );
   }
 
   Point getMousePositionOnCanvas(MouseEvent event) {
@@ -339,13 +365,19 @@ class PaintComponent implements OnInit {
     canvas.fill(rect, color);
   }
 
-  void filter(String filterName) {
+  void filter(String filterName, [Object options]) {
     var rect = getMark();
     try {
-      canvas.filter(rect, filterName);
+      canvas.filter(rect, filterName, options);
     } catch (ex) {
-      window.console.log(ex);
+      window.alert('Could not apply filter.');
+      throw ex;
     }
+  }
+
+  void delete() {
+    var rect = getMark();
+    canvas.delete(rect);
   }
 
 }

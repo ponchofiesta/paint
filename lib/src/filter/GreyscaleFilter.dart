@@ -1,14 +1,14 @@
 import 'dart:html';
 import 'dart:math';
 
-import 'AbstractFilter.dart';
+import 'package:paint/src/filter/AbstractFilter.dart';
 
 class GreyscaleFilter extends AbstractFilter {
 
-  GreyscaleFilter(CanvasRenderingContext2D ctx) : super(ctx);
+  GreyscaleFilter(CanvasElement canvas) : super(canvas);
 
   @override
-  void use(Rectangle rect, {Object options}) {
+  void use(Rectangle rect, [Object options]) {
     var imgData = ctx.getImageData(rect.left, rect.top, rect.width, rect.height);
     var pixels = imgData.data;
     for (var i = 0, n = pixels.length; i < n; i += 4) {

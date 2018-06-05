@@ -9,13 +9,16 @@
     <div class="ui dropdown item">
         Edit <i class="dropdown icon"></i>
         <div class="menu">
+            <a class="item" (click)="delete()">Delete area</a>
             <a class="item" (click)="fill()">Fill area</a>
         </div>
     </div>
     <div class="ui dropdown item">
         Filter <i class="dropdown icon"></i>
         <div class="menu">
-            <a class="item" (click)="filter('greyscale')">Black and white</a>
+            <a class="item" (click)="filter('greyscale')">Greyscale</a>
+            <a class="item" (click)="filter('emboss')">Emboss</a>
+            <a class="item" (click)="filter('gaussianblur')">Gaussian Blur</a>
         </div>
     </div>
 </div>
@@ -23,21 +26,46 @@
 <div class="main-wrapper">
 
     <div class="tools">
-        <a class="ui basic icon button mark"
+        <a class="ui basic icon button mark" title="Mark rectangle"
            [ngClass]="{ 'active': activeTool === 'mark' }"
            (click)="setTool('mark')">
             <i class="icon"></i>
         </a>
-        <a class="ui basic icon button text"
+        <a class="ui basic icon button text" title="Insert text"
            [ngClass]="{ 'active': activeTool === 'text' }"
            (click)="setTool('text')">
             <i class="icon"></i>
         </a>
-        <a class="ui basic icon button pen"
+        <a class="ui basic icon button pen" title="Draw with a pen"
            [ngClass]="{ 'active': activeTool === 'pen' }"
            (click)="setTool('pen')">
             <i class="icon"></i>
         </a>
+        <a class="ui basic icon button rubber" title="Delete with a rubber"
+           [ngClass]="{ 'active': activeTool === 'rubber' }"
+           (click)="setTool('rubber')">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button pipette" title="Get color of a pixel"
+           [ngClass]="{ 'active': activeTool === 'pipette' }"
+           (click)="setTool('pipette')">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button fill" title="Fill area with color"
+           [ngClass]="{ 'active': activeTool === 'fill' }"
+           (click)="setTool('fill')">
+            <i class="icon"></i>
+        </a>
+        <a class="ui basic icon button gradient" title="Draw a gradient"
+           [ngClass]="{ 'active': activeTool === 'gradient' }"
+           (click)="setTool('gradient')">
+            <i class="icon"></i>
+        </a>
+        <input class="ui basic icon button color" type="color" title="Choose the color"
+               (change)="color.hex = $event.target.value"
+               [value]="color.hex">
+
+        <!-- pen popup -->
         <div class="ui popup pen">
             <input type="range" min="1" max="100"
                    (change)="penSize = $event.target.valueAsNumber"
@@ -50,24 +78,7 @@
                  }">
             </div>
         </div>
-        <a class="ui basic icon button pipette"
-           [ngClass]="{ 'active': activeTool === 'pipette' }"
-           (click)="setTool('pipette')">
-            <i class="icon"></i>
-        </a>
-        <a class="ui basic icon button fill"
-           [ngClass]="{ 'active': activeTool === 'fill' }"
-           (click)="setTool('fill')">
-            <i class="icon"></i>
-        </a>
-        <a class="ui basic icon button gradient"
-           [ngClass]="{ 'active': activeTool === 'gradient' }"
-           (click)="setTool('gradient')">
-            <i class="icon"></i>
-        </a>
-        <input class="ui basic icon button color" type="color"
-               (change)="color.hex = $event.target.value"
-               [value]="color.hex">
+
     </div>
 
     <div class="canvas chess-bg">

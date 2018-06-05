@@ -1,10 +1,11 @@
-import 'dart:async';
 import 'dart:html';
 import 'dart:math';
 
-import 'Color.dart';
-import 'filter/AbstractFilter.dart';
-import 'filter/GreyscaleFilter.dart';
+import 'package:paint/src/Color.dart';
+import 'package:paint/src/filter/AbstractFilter.dart';
+import 'package:paint/src/filter/EmbossFilter.dart';
+import 'package:paint/src/filter/GaussianBlurFilter.dart';
+import 'package:paint/src/filter/GreyscaleFilter.dart';
 
 class Canvas {
 
@@ -24,6 +25,7 @@ class Canvas {
     _mouseLastPosition = position;
     _penSize = penSize;
     _color = color;
+    penMove(position);
   }
 
   void penMove(Point position) {
@@ -58,23 +60,50 @@ class Canvas {
 
   void fill(Rectangle rect, Color color) {
     ctx
-      ..beginPath()
-      ..rect(rect.left, rect.top, rect.width, rect.height)
       ..fillStyle = color.toRgba()
-      ..fill();
+      ..fillRect(rect.left, rect.top, rect.width, rect.height);
   }
 
-  void filter(Rectangle rect, String filterName, {Object options}) {
+  void filter(Rectangle rect, String filterName, [Object options]) {
     var filter = getFilter(filterName);
-    filter.use(rect);
+    filter.use(rect, options);
   }
 
   AbstractFilter getFilter(String filterName) {
     switch (filterName) {
       case 'greyscale':
-        return new GreyscaleFilter(ctx);
+        return new GreyscaleFilter(canvas);
+      case 'gaussianblur':
+        return new GaussianBlurFilter(canvas);
+      case 'emboss':
+        return new EmbossFilter(canvas);
     }
     throw new Exception("Filter not found");
+  }
+
+  void delete(Rectangle rect) {
+    ctx.clearRect(rect.left, rect.top, rect.width, rect.height);
+  }
+
+  void rubberStart(Point position, int penSize) {
+    _mouseLastPosition = position;
+    _penSize = penSize;
+    rubberMove(position);
+  }
+
+  void rubberMove(Point position) {
+    ctx
+      ..save()
+      ..beginPath()
+      ..globalCompositeOperation = 'destination-out'
+      ..moveTo(_mouseLastPosition.x, _mouseLastPosition.y)
+      ..lineTo(position.x, position.y)
+      ..lineCap = 'round'
+      ..lineWidth = _penSize
+      ..strokeStyle = '#000'
+      ..stroke()
+      ..restore();
+    _mouseLastPosition = position;
   }
 
 }

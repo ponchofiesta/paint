@@ -49,6 +49,9 @@
 .tools .pen i {
     background-image: url("icons/PencilToolIcon.png");
 }
+.tools .rubber i {
+    background-image: url("icons/EraserToolIcon.png");
+}
 .tools>.button.active {
     box-shadow: 0 0 0 1px rgba(34,36,38,1) inset;
 }

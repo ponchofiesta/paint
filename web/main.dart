@@ -1,7 +1,7 @@
 import 'package:angular/angular.dart';
 
-import 'package:paint/app_component.template.dart' as ng;
+import 'package:paint/paint_component.template.dart' as ng;
 
 void main() {
-  runApp(ng.AppComponentNgFactory);
+  runApp(ng.PaintComponentNgFactory);
 }
