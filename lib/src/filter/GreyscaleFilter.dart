@@ -15,7 +15,6 @@ class GreyscaleFilter extends AbstractFilter {
       int grayscale = (pixels[i] * .3 + pixels[i + 1] * .59 + pixels[i + 2] * .11).round();
       pixels[i] = pixels[i + 1] = pixels[i + 2] = grayscale;
     }
-    //redraw the image in black & white
     ctx.putImageData(imgData, rect.left, rect.top);
   }
 

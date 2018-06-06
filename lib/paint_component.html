@@ -19,6 +19,8 @@
             <a class="item" (click)="filter('greyscale')">Greyscale</a>
             <a class="item" (click)="filter('emboss')">Emboss</a>
             <a class="item" (click)="filter('gaussianblur')">Gaussian Blur</a>
+            <a class="item" (click)="filter('ascii')">ASCII</a>
+            <a class="item" (click)="filter('pixelate')">Pixelate</a>
         </div>
     </div>
 </div>
@@ -196,6 +198,20 @@
 <div id="mark-tool" class="hidden"></div>
 
 
-<!-- File open helper -->
+<!-- Filter Dialog: Pixelate -->
 
-<input type="file" id="open-image" accept="image/x-png,image/gif,image/jpeg" />
+<div class="ui mini modal" id="filter-pixelate-modal">
+    <div class="header">Pixelate</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>Pixel size</label>
+                <input type="number" name="size">
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui primary approve button">Approve</div>
+        <div class="ui cancel button">Cancel</div>
+    </div>
+</div>

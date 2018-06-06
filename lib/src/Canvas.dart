@@ -3,9 +3,11 @@ import 'dart:math';
 
 import 'package:paint/src/Color.dart';
 import 'package:paint/src/filter/AbstractFilter.dart';
+import 'package:paint/src/filter/AsciiFilter.dart';
 import 'package:paint/src/filter/EmbossFilter.dart';
 import 'package:paint/src/filter/GaussianBlurFilter.dart';
 import 'package:paint/src/filter/GreyscaleFilter.dart';
+import 'package:paint/src/filter/PixelateFilter.dart';
 
 class Canvas {
 
@@ -77,6 +79,10 @@ class Canvas {
         return new GaussianBlurFilter(canvas);
       case 'emboss':
         return new EmbossFilter(canvas);
+      case 'ascii':
+        return new AsciiFilter(canvas);
+      case 'pixelate':
+        return new PixelateFilter(canvas);
     }
     throw new Exception("Filter not found");
   }

@@ -116,7 +116,9 @@ class PaintComponent implements OnInit {
   }
 
   void openImage(Function callback(CanvasElement canvas)) {
-    InputElement input = querySelector('#open-image');
+    InputElement input = document.createElement('input');
+    input.accept = 'image/x-png,image/gif,image/jpeg';
+    input.type = 'file';
     input.addEventListener('change', (event) {
       var file = input.files.first;
       var img = new ImageElement();
@@ -365,8 +367,40 @@ class PaintComponent implements OnInit {
     canvas.fill(rect, color);
   }
 
-  void filter(String filterName, [Object options]) {
+  void filter(String filterName, [Map options]) {
+
+    if (options == null || !(options is Map)) {
+      options = new Map();
+    }
+
     var rect = getMark();
+    var modalSelector = '#filter-${filterName}-modal';
+    var modal = querySelector(modalSelector);
+
+    if (modal != null) {
+      context
+          .callMethod(r'$', [modalSelector])
+          .callMethod('modal', [new JsObject.jsify({
+            'onApprove': new JsFunction.withThis((element){
+
+              var inputs = querySelectorAll('${modalSelector} form input');
+
+              for (InputElement input in inputs) {
+                options[input.name] = input.value;
+              }
+
+              filterRun(filterName, rect, options);
+
+            })
+          })])
+          .callMethod('modal', ['show']);
+    } else {
+      filterRun(filterName, rect, options);
+    }
+
+  }
+
+  void filterRun(String filterName, [Rectangle rect, Map options]) {
     try {
       canvas.filter(rect, filterName, options);
     } catch (ex) {
