@@ -70,6 +70,11 @@ class PaintComponent implements OnInit {
         .callMethod(r'$', ['.ui.dropdown'])
         .callMethod('dropdown');
 
+    // initialize all checkboxes
+    context
+        .callMethod(r'$', ['.ui.checkbox'])
+        .callMethod('checkbox');
+
     // tools: default color
     (querySelector('.tools input[type="color"]') as InputElement).value = '#fff';
 
@@ -386,7 +391,19 @@ class PaintComponent implements OnInit {
               var inputs = querySelectorAll('${modalSelector} form input');
 
               for (InputElement input in inputs) {
-                options[input.name] = input.value;
+                switch (input.type) {
+                  case 'text':
+                    options[input.name] = input.value;
+                    break;
+                  case 'number':
+                    options[input.name] = input.valueAsNumber;
+                    break;
+                  case 'radio':
+                    if (input.checked) {
+                      options[input.name] = input.value;
+                    }
+                    break;
+                }
               }
 
               filterRun(filterName, rect, options);

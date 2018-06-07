@@ -11,6 +11,11 @@ class Color {
     return 'rgba(${r},${g},${b},${a})';
   }
 
+  @override
+  String toString() {
+    return 'Color: ${r},${g},${b},${a}';
+  }
+
   String get hex {
     String hexr = r.toRadixString(16);
     if (hexr.length == 1) {

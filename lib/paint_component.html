@@ -16,11 +16,13 @@
     <div class="ui dropdown item">
         Filter <i class="dropdown icon"></i>
         <div class="menu">
+            <a class="item" (click)="filter('brightness')">Brightness</a>
             <a class="item" (click)="filter('greyscale')">Greyscale</a>
+            <a class="item" (click)="filter('blur')">Blur</a>
+            <a class="item" (click)="filter('sharpen')">Sharpen</a>
             <a class="item" (click)="filter('emboss')">Emboss</a>
-            <a class="item" (click)="filter('gaussianblur')">Gaussian Blur</a>
-            <a class="item" (click)="filter('ascii')">ASCII</a>
             <a class="item" (click)="filter('pixelate')">Pixelate</a>
+            <a class="item" (click)="filter('ascii')">ASCII</a>
         </div>
     </div>
 </div>
@@ -207,6 +209,49 @@
             <div class="field">
                 <label>Pixel size</label>
                 <input type="number" name="size">
+            </div>
+            <div class="grouped fields">
+                <label>Mode</label>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="mode" value="raster" class="hidden" checked>
+                        <label>Rasterize</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="transparent" tabindex="0" class="hidden">
+                        <label>Random transparency</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="brightness" tabindex="0" class="hidden">
+                        <label>Random brigthness</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="color" tabindex="0" class="hidden">
+                        <label>Random color</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui primary approve button">Approve</div>
+        <div class="ui cancel button">Cancel</div>
+    </div>
+</div>
+
+<div class="ui mini modal" id="filter-brightness-modal">
+    <div class="header">Brightness</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>Adjustment</label>
+                <input type="number" name="brightness">
             </div>
         </form>
     </div>

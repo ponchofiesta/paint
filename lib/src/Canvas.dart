@@ -4,10 +4,12 @@ import 'dart:math';
 import 'package:paint/src/Color.dart';
 import 'package:paint/src/filter/AbstractFilter.dart';
 import 'package:paint/src/filter/AsciiFilter.dart';
+import 'package:paint/src/filter/BlurFilter.dart';
+import 'package:paint/src/filter/BrightenFilter.dart';
 import 'package:paint/src/filter/EmbossFilter.dart';
-import 'package:paint/src/filter/GaussianBlurFilter.dart';
 import 'package:paint/src/filter/GreyscaleFilter.dart';
 import 'package:paint/src/filter/PixelateFilter.dart';
+import 'package:paint/src/filter/SharpenFilter.dart';
 
 class Canvas {
 
@@ -75,14 +77,18 @@ class Canvas {
     switch (filterName) {
       case 'greyscale':
         return new GreyscaleFilter(canvas);
-      case 'gaussianblur':
-        return new GaussianBlurFilter(canvas);
       case 'emboss':
         return new EmbossFilter(canvas);
       case 'ascii':
         return new AsciiFilter(canvas);
       case 'pixelate':
         return new PixelateFilter(canvas);
+      case 'blur':
+        return new BlurFilter(canvas);
+      case 'sharpen':
+        return new SharpenFilter(canvas);
+      case 'brightness':
+        return new BrightenFilter(canvas);
     }
     throw new Exception("Filter not found");
   }
