@@ -26,30 +26,31 @@
     width: 16px!important;
 }
 /* color picker button */
-.tools>input[type="color"] {
+.tools>input[type="color"],
+input[type="color"] {
     height: 32px;
     width: 32px;
     padding: 4px!important;
 }
-.tools .pipette i {
+.tools>.pipette>i {
     background-image: url("icons/ColorPickerToolIcon.png");
 }
-.tools .mark i {
+.tools>.mark>i {
     background-image: url("icons/SelectionIcon.png");
 }
-.tools .text i {
+.tools>.text>i {
     background-image: url("icons/TextToolIcon.png");
 }
-.tools .gradient i {
+.tools>.gradient>i {
     background-image: url("icons/LinearClampedGradientIcon.png");
 }
-.tools .fill i {
+.tools>.fill>i {
     background-image: url("icons/PaintBucketIcon.png");
 }
-.tools .pen i {
+.tools>.pen>i {
     background-image: url("icons/PencilToolIcon.png");
 }
-.tools .rubber i {
+.tools>.rubber>i {
     background-image: url("icons/EraserToolIcon.png");
 }
 .tools>.button.active {
@@ -59,6 +60,13 @@
 .pen-preview {
     background-color: #000;
     border-radius: 50%;
+}
+
+#gradient-tool {
+    position: absolute;
+    height: 0;
+    border-top: 2px dashed grey;
+    transform-origin: top left;
 }
 
 div.canvas {

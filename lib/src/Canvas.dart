@@ -118,4 +118,13 @@ class Canvas {
     _mouseLastPosition = position;
   }
 
+  void gradient(List<Point> points, List<Color> colors, Rectangle rect) {
+    var gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[1].x, points[1].y);
+    for (var i = 0; i < colors.length; i++) {
+      gradient.addColorStop(i / (colors.length - 1), colors[i].toRgba());
+    }
+    ctx.fillStyle = gradient;
+    ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+  }
+
 }

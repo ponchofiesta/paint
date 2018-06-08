@@ -32,6 +32,7 @@ class PaintComponent implements OnInit {
   Point markPositionStart = new Point(0, 0);
   Rectangle markRect = new Rectangle(0, 0, 0, 0);
   bool isMouseDown = false;
+  var gradientPoints = [new Point(0, 0), new Point(0, 0)];
 
   String font = 'Arial';
   num fontSize = 12;
@@ -47,36 +48,51 @@ class PaintComponent implements OnInit {
 
     // tools: pen popup
     context
-        .callMethod(r'$', ['.tools .pen'])
-        .callMethod('popup', [new JsObject.jsify({
-          'popup': context.callMethod(r'$', ['.pen.popup']),
-          'on': 'click',
-          'hoverable': true,
-          'position': 'right center'
-        })]);
+      .callMethod(r'$', ['.tools .pen'])
+      .callMethod('popup', [new JsObject.jsify({
+        'popup': context.callMethod(r'$', ['.pen.popup']),
+        'on': 'click',
+        'hoverable': true,
+        'position': 'right center'
+      })]);
 
     // tools: rubber popup
     context
-        .callMethod(r'$', ['.tools .rubber'])
-        .callMethod('popup', [new JsObject.jsify({
-      'popup': context.callMethod(r'$', ['.pen.popup']),
-      'on': 'click',
-      'hoverable': true,
-      'position': 'right center'
-    })]);
+      .callMethod(r'$', ['.tools .rubber'])
+      .callMethod('popup', [new JsObject.jsify({
+        'popup': context.callMethod(r'$', ['.pen.popup']),
+        'on': 'click',
+        'hoverable': true,
+        'position': 'right center'
+      })]);
+
+    // tools: gradient popup
+    context
+      .callMethod(r'$', ['.tools .gradient'])
+      .callMethod('popup', [new JsObject.jsify({
+        'popup': context.callMethod(r'$', ['.gradient.popup']),
+        'on': 'click',
+        'hoverable': true,
+        'position': 'right center',
+        'closable': false
+      })]);
 
     // tools: text tool chooser
     context
-        .callMethod(r'$', ['.ui.dropdown'])
-        .callMethod('dropdown');
+      .callMethod(r'$', [':not(#main-menu) .ui.dropdown'])
+      .callMethod('dropdown');
+
+    // initialize menu dropdown
+    context
+      .callMethod(r'$', ['#main-menu .ui.dropdown'])
+      .callMethod('dropdown', [new JsObject.jsify({
+        'action': 'hide'
+      })]);
 
     // initialize all checkboxes
     context
         .callMethod(r'$', ['.ui.checkbox'])
         .callMethod('checkbox');
-
-    // tools: default color
-    (querySelector('.tools input[type="color"]') as InputElement).value = '#fff';
 
     querySelector('body')
       ..onMouseUp.listen(mouseUpCanvas)
@@ -138,16 +154,52 @@ class PaintComponent implements OnInit {
     input.click();
   }
 
-  void saveImage() {
+  void saveImage([Event event]) {
+    if (event != null) {
+      event.preventDefault();
+    }
     CanvasElement canvas = querySelector("#canvas");
-    AnchorElement a = querySelector("#saveImage");
-    a.href = canvas.toDataUrl();
+    context
+      .callMethod(r'$', ['#save-image-modal'])
+      .callMethod('modal', [new JsObject.jsify({
+        'onApprove': new JsFunction.withThis((element){
+          InputElement filetype = querySelector('#save-image-modal form input[name="filetype"]');
+          InputElement quality = querySelector('#save-image-modal form input[name="quality"]');
+          canvas.toBlob((blob) {
+            AnchorElement a = document.createElement('a');
+            a.classes.add('hidden');
+            a.href = Url.createObjectUrlFromBlob(blob);
+            querySelector('body').append(a);
+            a.click();
+            a.remove();
+          }, filetype.value, quality.valueAsNumber);
+        })
+      })])
+      .callMethod('modal', ['show']);
   }
 
   void setTool(String tool) {
     querySelector('#text-tool').classes.add('hidden');
     querySelector('#mark-tool').classes.add('hidden');
     activeTool = tool;
+  }
+
+  void markMouseDownCanvas(MouseEvent event) {
+    var markTool = querySelector('#mark-tool');
+    if (markTool.classes.contains('hidden')) {
+      // start new marker
+      markPositionStart = event.client;
+      markTool.style
+        ..left = '${markPositionStart.x}px'
+        ..top = '${markPositionStart.y}px'
+        ..width = '0'
+        ..height = '0';
+      markRect = new Rectangle(0, 0, 0, 0);
+      markTool.classes.remove('hidden');
+    } else {
+      // clear marker
+      markTool.classes.add('hidden');
+    }
   }
 
   void mouseDownCanvas(MouseEvent event) {
@@ -185,28 +237,36 @@ class PaintComponent implements OnInit {
       case 'rubber':
         canvas.rubberStart(mousePosition, penSize);
         break;
-    }
-  }
 
-  void markMouseDownCanvas(MouseEvent event) {
-    var markTool = querySelector('#mark-tool');
-    if (markTool.classes.contains('hidden')) {
-      // start new marker
-      markPositionStart = event.client;
-      markTool.style
-        ..left = '${markPositionStart.x}px'
-        ..top = '${markPositionStart.y}px'
-        ..width = '0'
-        ..height = '0';
-      markRect = new Rectangle(0, 0, 0, 0);
-      markTool.classes.remove('hidden');
-    } else {
-      // clear marker
-      markTool.classes.add('hidden');
+      case 'gradient':
+        var gradientTool = querySelector('#gradient-tool');
+        if (gradientTool.classes.contains('hidden')) {
+          // start new gradient
+          gradientStart(mousePosition);
+        } else {
+          // clear gradient
+          gradientTool.classes.add('hidden');
+        }
+
+        break;
     }
   }
 
   void mouseUpCanvas(MouseEvent event) {
+    if (isMouseDown) {
+      switch (activeTool) {
+        case 'gradient':
+          if (!querySelector('#gradient-tool').classes.contains('hidden')) {
+            var inputs = querySelectorAll('.tools .gradient.popup input[type="color"]');
+            List<Color> colors = [];
+            for (InputElement input in inputs) {
+              colors.add(new Color.fromHex(input.value));
+            }
+            canvas.gradient(gradientPoints, colors, new Rectangle(0, 0, canvas.canvas.width, canvas.canvas.height));
+          }
+          break;
+      }
+    }
     isMouseDown = false;
   }
 
@@ -214,6 +274,7 @@ class PaintComponent implements OnInit {
     if (isToolShown) {
       return;
     }
+
     if (isMouseDown) {
       mousePosition = getMousePositionOnCanvas(event);
       switch (activeTool) {
@@ -232,6 +293,10 @@ class PaintComponent implements OnInit {
 
         case 'rubber':
           canvas.rubberMove(mousePosition);
+          break;
+
+        case 'gradient':
+          gradientMove(mousePosition);
           break;
       }
     }
@@ -431,4 +496,33 @@ class PaintComponent implements OnInit {
     canvas.delete(rect);
   }
 
+  void gradientAddColor() {
+    // TODO implement gradient add color
+  }
+
+  void gradientStart(Point position) {
+    gradientPoints[0] = new Point(position.x, position.y);
+    gradientMove(position);
+    querySelector('#gradient-tool').classes.remove('hidden');
+  }
+
+  void gradientMove(Point position) {
+    gradientPoints[1] = new Point(position.x, position.y);
+
+    var dx = gradientPoints[1].x - gradientPoints[0].x;
+    var dy = gradientPoints[1].y - gradientPoints[0].y;
+    var angle = atan2(dy, dx);
+    angle *= 180 / pi;
+
+    var length = sqrt(dx * dx + dy * dy);
+
+    var left = gradientPoints[0].x + canvas.canvas.documentOffset.x;
+    var top = gradientPoints[0].y + canvas.canvas.documentOffset.y;
+
+    querySelector('#gradient-tool').style
+      ..left = '${left}px'
+      ..top = '${top}px'
+      ..width = '${length}px'
+      ..transform = 'rotate(${angle}deg)';
+  }
 }

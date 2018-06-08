@@ -1,4 +1,4 @@
-<div class="ui teal inverted menu">
+<div class="ui teal inverted menu" id="main-menu">
     <div class="active item">
         <i class="paint brush icon"></i>
         Paint
@@ -65,22 +65,45 @@
            (click)="setTool('gradient')">
             <i class="icon"></i>
         </a>
+        <!-- gradient popup -->
+        <div class="ui popup gradient">
+            <form class="ui form">
+                <div class="field">
+                    <label>Colors</label>
+                    <input class="ui basic icon button color" type="color" name="color[]" [value]="color.hex">
+                    <input class="ui basic icon button color" type="color" name="color[]">
+                </div>
+                <div class="field">
+                    <button class="ui button" type="button" (click)="gradientAddColor()">
+                        <i class="plus icon"></i>
+                        Add color
+                    </button>
+                </div>
+            </form>
+        </div>
         <input class="ui basic icon button color" type="color" title="Choose the color"
                (change)="color.hex = $event.target.value"
                [value]="color.hex">
 
         <!-- pen popup -->
         <div class="ui popup pen">
-            <input type="range" min="1" max="100"
-                   (change)="penSize = $event.target.valueAsNumber"
-                   [value]="penSize.toString()">
-            <div class="pen-preview"
-                 [ngStyle]="
-                 {
-                    'width': penSize.toString()+'px',
-                    'height': penSize.toString()+'px'
-                 }">
-            </div>
+            <form class="ui form">
+                <div class="field">
+                    <label>Pen size</label>
+                    <input type="range" min="1" max="100"
+                           (change)="penSize = $event.target.valueAsNumber"
+                           [value]="penSize.toString()">
+                </div>
+                <div class="field">
+                    <div class="pen-preview"
+                         [ngStyle]="
+                         {
+                            'width': penSize.toString()+'px',
+                            'height': penSize.toString()+'px'
+                         }">
+                    </div>
+                </div>
+            </form>
         </div>
 
     </div>
@@ -92,27 +115,9 @@
 </div>
 
 
-<!-- New Image Dialog -->
+<!-- Text Tool -->
 
-<div class="ui mini modal" id="new-image-modal">
-    <div class="header">Create new image</div>
-    <div class="content">
-        <form class="ui form">
-            <div class="field">
-                <label>Width</label>
-                <input type="number" name="width">
-            </div>
-            <div class="field">
-                <label>Height</label>
-                <input type="number" name="height">
-            </div>
-        </form>
-    </div>
-    <div class="actions">
-        <div class="ui primary approve button">Approve</div>
-        <div class="ui cancel button">Cancel</div>
-    </div>
-</div>
+<div id="gradient-tool" class="hidden"></div>
 
 
 <!-- Text Tool -->
@@ -200,7 +205,30 @@
 <div id="mark-tool" class="hidden"></div>
 
 
-<!-- Filter Dialog: Pixelate -->
+<!-- Gradient tool -->
+
+<div class="ui mini modal" id="gradient-tool-modal">
+    <div class="header">Gradient tool</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>Colors</label>
+                <input class="ui basic icon button color" type="color" name="color[]" [value]="color.toRgba()">
+                <input class="ui basic icon button color" type="color" name="color[]">
+            </div>
+            <div class="field">
+                <button type="button" (click)="gradientAddColor()">Add color</button>
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui primary approve button">Approve</div>
+        <div class="ui cancel button">Cancel</div>
+    </div>
+</div>
+
+
+<!-- Filter dialog: Pixelate -->
 
 <div class="ui mini modal" id="filter-pixelate-modal">
     <div class="header">Pixelate</div>
@@ -208,7 +236,7 @@
         <form class="ui form">
             <div class="field">
                 <label>Pixel size</label>
-                <input type="number" name="size">
+                <input type="number" name="size" value="10" min="2">
             </div>
             <div class="grouped fields">
                 <label>Mode</label>
@@ -220,19 +248,19 @@
                 </div>
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="transparent" tabindex="0" class="hidden">
+                        <input type="radio" name="mode" value="transparent" class="hidden">
                         <label>Random transparency</label>
                     </div>
                 </div>
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="brightness" tabindex="0" class="hidden">
+                        <input type="radio" name="mode" value="brightness" class="hidden">
                         <label>Random brigthness</label>
                     </div>
                 </div>
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="color" tabindex="0" class="hidden">
+                        <input type="radio" name="mode" value="color" class="hidden">
                         <label>Random color</label>
                     </div>
                 </div>
@@ -245,13 +273,71 @@
     </div>
 </div>
 
+
+<!-- Filter dialog: Brightness -->
+
 <div class="ui mini modal" id="filter-brightness-modal">
     <div class="header">Brightness</div>
     <div class="content">
         <form class="ui form">
             <div class="field">
                 <label>Adjustment</label>
-                <input type="number" name="brightness">
+                <input type="number" name="brightness" value="20" min="255" max="255">
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui primary approve button">Approve</div>
+        <div class="ui cancel button">Cancel</div>
+    </div>
+</div>
+
+
+<!-- New Image Dialog -->
+
+<div class="ui mini modal" id="new-image-modal">
+    <div class="header">Create new image</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>Width</label>
+                <input type="number" name="width" value="480" min="10">
+            </div>
+            <div class="field">
+                <label>Height</label>
+                <input type="number" name="height" value="320" min="10">
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui primary approve button">Approve</div>
+        <div class="ui cancel button">Cancel</div>
+    </div>
+</div>
+
+
+<!-- Save image dialog -->
+
+<div class="ui mini modal" id="save-image-modal">
+    <div class="header">Save image</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>File type</label>
+                <div class="ui selection dropdown">
+                    <input type="hidden" name="filetype" value="image/jpeg">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Default</div>
+                    <div class="menu">
+                        <div class="item" data-value="image/jpeg">JPEG</div>
+                        <div class="item" data-value="image/png">PNG</div>
+                        <div class="item" data-value="image/bmp">BMP</div>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Quality</label>
+                <input type="number" name="quality" value="0.9" min="0.05" max="1.0" step="0.05">
             </div>
         </form>
     </div>

@@ -17,6 +17,40 @@ class Color {
   }
 
   String get hex {
+    return toHex();
+  }
+
+  set hex(String hex) {
+    Color color = new Color.fromHex(hex);
+    r = color.r;
+    g = color.g;
+    b = color.b;
+    a = color.a;
+  }
+
+  factory Color.fromHex(String hex) {
+    String hexr;
+    String hexg;
+    String hexb;
+    if (hex.length == 4) {
+      hexr = hex[1] * 2;
+      hexg = hex[2] * 2;
+      hexb = hex[3] * 2;
+    } else if (hex.length == 7) {
+      hexr = hex.substring(1, 3);
+      hexg = hex.substring(3, 5);
+      hexb = hex.substring(5, 7);
+    } else {
+      throw 'Hex format invalid';
+    }
+    var r = int.parse(hexr, radix: 16);
+    var g = int.parse(hexg, radix: 16);
+    var b = int.parse(hexb, radix: 16);
+    var a = 255;
+    return new Color(r, g, b, a);
+  }
+
+  String toHex() {
     String hexr = r.toRadixString(16);
     if (hexr.length == 1) {
       hexr = '0' + hexr;
@@ -30,27 +64,6 @@ class Color {
       hexb = '0' + hexb;
     }
     return '#' + hexr + hexg + hexb;
-  }
-
-  set hex(String hex) {
-    String hexr;
-    String hexg;
-    String hexb;
-    if (hex.length == 4) {
-      hexr = hex[1] * 2;
-      hexg = hex[2] * 2;
-      hexb = hex[3] * 2;
-    } else if (hex.length == 7) {
-      hexr = hex.substring(1, 3);
-      hexg = hex.substring(3, 5);
-      hexb = hex.substring(5, 7);
-    } else {
-      return;
-    }
-    r = int.parse(hexr, radix: 16);
-    g = int.parse(hexg, radix: 16);
-    b = int.parse(hexb, radix: 16);
-    a = 255;
   }
 
 }

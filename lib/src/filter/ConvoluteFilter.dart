@@ -19,11 +19,11 @@ class ConvoluteFilter extends AbstractFilter {
       offset = options['offset'] as int;
     }
 
-    List<int> m = []
+    List<int> matrixFlat = []
         ..addAll(matrix[0])
         ..addAll(matrix[1])
         ..addAll(matrix[2]);
-    var divisor = m.reduce((a, b) => (a + b));
+    var divisor = matrixFlat.reduce((a, b) => (a + b));
     if (divisor == 0) {
       divisor = 1;
     }
@@ -52,7 +52,7 @@ class ConvoluteFilter extends AbstractFilter {
       ];
       result = 0;
       for (var j = 0; j < iPicker.length; j++) {
-        result += (iPicker[j] >= 0 && iPicker[j] < oldPixels.length ? oldPixels[iPicker[j]] : oldPixels[i]) * m[j];
+        result += (iPicker[j] >= 0 && iPicker[j] < oldPixels.length ? oldPixels[iPicker[j]] : oldPixels[i]) * matrixFlat[j];
       }
       result = (result / divisor).floor();
       result += offset;
