@@ -27,7 +27,7 @@ class PixelateFilter extends AbstractFilter {
 
       var imgData = ctx.getImageData(rect.left, rect.top, rect.width, rect.height);
       var pixels = imgData.data;
-      var iCDif = 80;
+      final diff = 80;
       int r0, r1, r2, r3, r4, r5, r6;
 
       for (var y = 0; y < rect.height; y += size){
@@ -40,20 +40,20 @@ class PixelateFilter extends AbstractFilter {
               break;
             case 'brightness':
               r0 = 255;
-              r1 = r3 = r5 = random(-iCDif, iCDif * 2);
-              r2 = r4 = r6 = random(0, iCDif);
+              r1 = r3 = r5 = random(-diff, diff * 2);
+              r2 = r4 = r6 = random(0, diff);
               break;
             case 'color':
               r0 = 255;
-              r1 = random(-iCDif, iCDif * 2);
-              r2 = random(0, iCDif);
-              r3 = random(-iCDif, iCDif * 2);
-              r4 = random(0, iCDif);
-              r5 = random(-iCDif, iCDif * 2);
-              r6 = random(0, iCDif);
+              r1 = random(-diff, diff * 2);
+              r2 = random(0, diff);
+              r3 = random(-diff, diff * 2);
+              r4 = random(0, diff);
+              r5 = random(-diff, diff * 2);
+              r6 = random(0, diff);
               break;
             default:
-              throw 'No mode defined';
+              throw 'No pixelate mode defined';
           }
 
           for (var y2 = 0; y2 < size; y2++){

@@ -179,8 +179,10 @@ class PaintComponent implements OnInit {
   }
 
   void setTool(String tool) {
+    if (tool != 'gradient') {
+      querySelector('#mark-tool').classes.add('hidden');
+    }
     querySelector('#text-tool').classes.add('hidden');
-    querySelector('#mark-tool').classes.add('hidden');
     activeTool = tool;
   }
 
@@ -257,12 +259,13 @@ class PaintComponent implements OnInit {
       switch (activeTool) {
         case 'gradient':
           if (!querySelector('#gradient-tool').classes.contains('hidden')) {
+            querySelector('#gradient-tool').classes.add('hidden');
             var inputs = querySelectorAll('.tools .gradient.popup input[type="color"]');
             List<Color> colors = [];
             for (InputElement input in inputs) {
               colors.add(new Color.fromHex(input.value));
             }
-            canvas.gradient(gradientPoints, colors, new Rectangle(0, 0, canvas.canvas.width, canvas.canvas.height));
+            canvas.gradient(gradientPoints, colors, markRect);
           }
           break;
       }
@@ -486,7 +489,7 @@ class PaintComponent implements OnInit {
     try {
       canvas.filter(rect, filterName, options);
     } catch (ex) {
-      window.alert('Could not apply filter.');
+      window.alert('Could not apply filter: ' + ex);
       throw ex;
     }
   }

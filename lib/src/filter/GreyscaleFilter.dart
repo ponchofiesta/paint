@@ -8,7 +8,7 @@ class GreyscaleFilter extends AbstractFilter {
   GreyscaleFilter(CanvasElement canvas) : super(canvas);
 
   @override
-  void use(Rectangle rect, [Object options]) {
+  void use(Rectangle rect, [Map options]) {
     var imgData = ctx.getImageData(rect.left, rect.top, rect.width, rect.height);
     var pixels = imgData.data;
     for (var i = 0, n = pixels.length; i < n; i += 4) {
