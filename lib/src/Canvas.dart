@@ -127,4 +127,8 @@ class Canvas {
     ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
   }
 
+  void importImage(ImageElement image, Rectangle rect) {
+    ctx.drawImageScaled(image, rect.left, rect.top, rect.width, rect.height);
+  }
+
 }

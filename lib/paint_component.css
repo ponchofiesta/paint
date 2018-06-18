@@ -62,13 +62,6 @@ input[type="color"] {
     border-radius: 50%;
 }
 
-#gradient-tool {
-    position: absolute;
-    height: 0;
-    border-top: 2px dashed grey;
-    transform-origin: top left;
-}
-
 div.canvas {
     flex: 1 1 auto;
     width: 100%;
@@ -111,6 +104,24 @@ div.canvas {
     padding: 0;
     line-height: 0;
     border: 2px dashed grey;
+}
+
+#gradient-tool {
+    position: absolute;
+    height: 0;
+    border-top: 2px dashed grey;
+    transform-origin: top left;
+}
+
+#import-tool {
+    position: absolute;
+    border: 2px dashed grey;
+    opacity: .5;
+}
+#import-tool img {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 #open-image {

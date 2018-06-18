@@ -46,14 +46,14 @@ class AsciiFilter extends AbstractFilter {
 
         // set ascii char for cell illuminance
         var char = '';
-        if (greyscale > 50) char = '.';
-        if (greyscale > 71) char = ':';
-        if (greyscale > 92) char = '*';
-        if (greyscale > 118) char = 'o';
-        if (greyscale > 130) char = '&';
-        if (greyscale > 163) char = '8';
-        if (greyscale > 184) char = '@';
-        if (greyscale > 205) char = '#';
+        if (greyscale > 50) char = '#';
+        if (greyscale > 71) char = '@';
+        if (greyscale > 92) char = '8';
+        if (greyscale > 118) char = '&';
+        if (greyscale > 130) char = 'o';
+        if (greyscale > 163) char = '*';
+        if (greyscale > 184) char = ':';
+        if (greyscale > 205) char = '.';
 
         // fill cell
         ctx

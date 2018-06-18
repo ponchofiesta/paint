@@ -39,6 +39,10 @@ class PaintComponent implements OnInit {
   String fontStyle = '';
   String fontWeight = '';
 
+  bool isImportMouseDown = false;
+
+  Point importMouseOffset;
+
 
   @override
   Future<Null> ngOnInit() async {
@@ -96,7 +100,8 @@ class PaintComponent implements OnInit {
 
     querySelector('body')
       ..onMouseUp.listen(mouseUpCanvas)
-      ..onMouseMove.listen(mouseMoveCanvas);
+      ..onMouseMove.listen(mouseMoveCanvas)
+      ..onKeyPress.listen(keyPress);
 
   }
 
@@ -127,8 +132,13 @@ class PaintComponent implements OnInit {
   void createImage({num width, num height}) {
     if (width == null || height == null) {
       // open image file
-      openImage((CanvasElement canvas) {
-        addCanvas(canvas);
+      openImage((ImageElement image) {
+        image.addEventListener('load', (event) {
+          var canvas = new CanvasElement(width: image.width, height: image.height);
+          var context = canvas.context2D;
+          context.drawImage(image, 0, 0);
+          addCanvas(canvas);
+        });
       });
     } else {
       // create new empty image
@@ -136,20 +146,15 @@ class PaintComponent implements OnInit {
     }
   }
 
-  void openImage(Function callback(CanvasElement canvas)) {
+  void openImage(Function callback(ImageElement image)) {
     InputElement input = document.createElement('input');
     input.accept = 'image/x-png,image/gif,image/jpeg';
     input.type = 'file';
     input.addEventListener('change', (event) {
       var file = input.files.first;
-      var img = new ImageElement();
-      img.addEventListener('load', (event) {
-        var canvas = new CanvasElement(width: img.width, height: img.height);
-        var context = canvas.context2D;
-        context.drawImage(img, 0, 0);
-        callback(canvas);
-      });
-      img.src = Url.createObjectUrl(file);
+      var image = new ImageElement();
+      image.src = Url.createObjectUrl(file);
+      callback(image);
     });
     input.click();
   }
@@ -178,11 +183,72 @@ class PaintComponent implements OnInit {
       .callMethod('modal', ['show']);
   }
 
+  void importImage() {
+    setTool('import');
+    openImage((ImageElement image) {
+      image.addEventListener('load', (event) {
+        num limit = 200;
+        int maxLength = max(image.width, image.height);
+        num factor = limit / maxLength;
+        var importTool = querySelector("#import-tool");
+        if (factor < 1) {
+          importTool.style
+            ..width = '${image.width * factor}px'
+            ..height = '${image.height * factor}px';
+        }
+        importTool
+          ..append(image)
+          ..classes.remove("hidden");
+      });
+    });
+  }
+
+  void importMouseDown(MouseEvent event) {
+    event.preventDefault();
+    var importTool = querySelector("#import-tool");
+    importMouseOffset = new Point(event.client.x - importTool.documentOffset.x, event.client.y - importTool.documentOffset.y);
+    isMouseDown = true;
+  }
+
+  void importMouseMove(MouseEvent event) {
+    if (isMouseDown) {
+      querySelector("#import-tool").style
+        ..left = '${event.client.x - importMouseOffset.x}px'
+        ..top = '${event.client.y - importMouseOffset.y}px';
+    }
+  }
+
+  void importMouseWheel(WheelEvent event) {
+    event.preventDefault();
+    var importTool = querySelector("#import-tool");
+    importTool.style
+      ..width = '${importTool.offsetWidth + event.deltaY * -.1}px'
+      ..height = '${importTool.offsetHeight + event.deltaY * -.1}px';
+  }
+
+  void importInsert() {
+    var importTool = querySelector('#import-tool');
+    if (!importTool.classes.contains('hidden')) {
+      var importImage = importTool.querySelector('img');
+      var importRect = new Rectangle(
+          importImage.documentOffset.x - canvas.canvas.documentOffset.x + 2,
+          importImage.documentOffset.y - canvas.canvas.documentOffset.y + 2,
+          importImage.offsetWidth,
+          importImage.offsetHeight
+      );
+      canvas.importImage(importImage, importRect);
+      importTool.classes.add('hidden');
+      importImage.remove();
+      return;
+    }
+  }
+
   void setTool(String tool) {
     if (tool != 'gradient') {
       querySelector('#mark-tool').classes.add('hidden');
     }
     querySelector('#text-tool').classes.add('hidden');
+    querySelector('#import-tool').classes.add('hidden');
     activeTool = tool;
   }
 
@@ -250,6 +316,10 @@ class PaintComponent implements OnInit {
           gradientTool.classes.add('hidden');
         }
 
+        break;
+
+      case 'import':
+        importInsert();
         break;
     }
   }
@@ -527,5 +597,15 @@ class PaintComponent implements OnInit {
       ..top = '${top}px'
       ..width = '${length}px'
       ..transform = 'rotate(${angle}deg)';
+  }
+
+  void keyPress(KeyboardEvent event) {
+    switch (activeTool) {
+      case 'import':
+        if (event.keyCode == 13) {
+          importInsert();
+        }
+        break;
+    }
   }
 }

@@ -5,7 +5,8 @@
     </div>
     <a class="item" download="image.png" (click)="newImage()">New</a>
     <a class="item" (click)="createImage()">Open</a>
-    <a class="item" id="saveImage" (click)="saveImage()">Save</a>
+    <a class="item" (click)="saveImage()">Save</a>
+    <a class="item" (click)="importImage()">Import</a>
     <div class="ui dropdown item">
         Edit <i class="dropdown icon"></i>
         <div class="menu">
@@ -226,6 +227,14 @@
         <div class="ui cancel button">Cancel</div>
     </div>
 </div>
+
+
+<!-- Import tool -->
+
+<div id="import-tool" class="hidden" draggable="false"
+     (mousedown)="importMouseDown($event)"
+     (mousemove)="importMouseMove($event)"
+     (wheel)="importMouseWheel($event)"></div>
 
 
 <!-- Filter dialog: Pixelate -->

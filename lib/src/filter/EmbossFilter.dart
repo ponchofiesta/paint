@@ -1,7 +1,6 @@
 import 'dart:html';
 import 'dart:math';
 
-import 'package:paint/src/filter/AbstractFilter.dart';
 import 'package:paint/src/filter/ConvoluteFilter.dart';
 
 class EmbossFilter extends ConvoluteFilter {
