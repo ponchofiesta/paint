@@ -109,6 +109,8 @@ div.canvas {
 #gradient-tool {
     position: absolute;
     height: 0;
+    padding-top: 20px!important;
+    padding-bottom: 20px!important;
     border-top: 2px dashed grey;
     transform-origin: top left;
 }

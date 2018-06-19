@@ -68,7 +68,7 @@
         </a>
         <!-- gradient popup -->
         <div class="ui popup gradient">
-            <form class="ui form">
+            <!--<form class="ui form">
                 <div class="field">
                     <label>Colors</label>
                     <input class="ui basic icon button color" type="color" name="color[]" [value]="color.hex">
@@ -80,7 +80,7 @@
                         Add color
                     </button>
                 </div>
-            </form>
+            </form>-->
         </div>
         <input class="ui basic icon button color" type="color" title="Choose the color"
                (change)="color.hex = $event.target.value"
@@ -138,9 +138,9 @@
     </div>
     <div class="ui segment">
         <form class="ui form">
-            <div class="fields">
-                <div class="ten wide field">
-                    <div class="ui fluid selection dropdown">
+
+                <div class="field">
+                    <div class="ui selection dropdown">
                         <input name="font" type="hidden" value="Arial"
                                (change)="setFont($event.target.value)">
                         <i class="dropdown icon"></i>
@@ -159,16 +159,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="ui icon buttons font-style">
-                    <button class="ui button bold" (click)="setFontWeight()" type="button">
-                        <i class="bold icon"></i>
-                    </button>
-                    <button class="ui button italic" (click)="setFontStyle()" type="button">
-                        <i class="italic icon"></i>
-                    </button>
-                </div>
-                <div class="six wide field">
-                    <div class="ui fluid selection dropdown">
+
+                <div class="field">
+                    <div class="ui selection dropdown">
                         <input name="size" type="hidden" value="12"
                                (change)="setFontSize($event.target.value)">
                         <i class="dropdown icon"></i>
@@ -187,7 +180,18 @@
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <div class="field">
+                    <div class="ui icon buttons font-style">
+                        <button class="ui button bold" (click)="setFontWeight()" type="button">
+                            <i class="bold icon"></i>
+                        </button>
+                        <button class="ui button italic" (click)="setFontStyle()" type="button">
+                            <i class="italic icon"></i>
+                        </button>
+                    </div>
+                </div>
+
             <div>
                 <button class="ui primary button" type="button" (click)="textInsert()">
                     Insert here
@@ -231,7 +235,7 @@
 
 <!-- Import tool -->
 
-<div id="import-tool" class="hidden" draggable="false"
+<div id="import-tool" class="hidden"
      (mousedown)="importMouseDown($event)"
      (mousemove)="importMouseMove($event)"
      (wheel)="importMouseWheel($event)"></div>

@@ -69,6 +69,7 @@ class PaintComponent implements OnInit {
         'hoverable': true,
         'position': 'right center'
       })]);
+    querySelector('.pen.popup').onMouseUp.forEach((element) => element);
 
     // tools: gradient popup
     context
@@ -77,8 +78,7 @@ class PaintComponent implements OnInit {
         'popup': context.callMethod(r'$', ['.gradient.popup']),
         'on': 'click',
         'hoverable': true,
-        'position': 'right center',
-        'closable': false
+        'position': 'right center'
       })]);
 
     // tools: text tool chooser
@@ -98,6 +98,15 @@ class PaintComponent implements OnInit {
         .callMethod(r'$', ['.ui.checkbox'])
         .callMethod('checkbox');
 
+    // initialize gradient chooser
+    var gradientChooser = new JsObject(context['Grapick'], [new JsObject.jsify({
+      'el': '.tools .gradient.popup',
+      'width': '200px'
+    })]);
+    gradientChooser.callMethod('addHandler', [0, 'red']);
+    gradientChooser.callMethod('addHandler', [100, 'blue']);
+
+    // add input listeners
     querySelector('body')
       ..onMouseUp.listen(mouseUpCanvas)
       ..onMouseMove.listen(mouseMoveCanvas)
