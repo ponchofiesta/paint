@@ -11,7 +11,7 @@ class BrightenFilter extends AbstractFilter {
   void use(Rectangle rect, [Map options]) {
 
     checkRequiredOptions(options, ['brightness']);
-    var brightness = int.parse(options['brightness'], radix: 10);
+    var brightness = options['brightness'];
 
     var imgData = ctx.getImageData(rect.left, rect.top, rect.width, rect.height);
     var pixels = imgData.data;

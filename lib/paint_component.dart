@@ -33,15 +33,12 @@ class PaintComponent implements OnInit {
   Rectangle markRect = new Rectangle(0, 0, 0, 0);
   bool isMouseDown = false;
   var gradientPoints = [new Point(0, 0), new Point(0, 0)];
-
   String font = 'Arial';
   num fontSize = 12;
   String fontStyle = '';
   String fontWeight = '';
-
-  bool isImportMouseDown = false;
-
   Point importMouseOffset;
+  var gradientChooser;
 
 
   @override
@@ -52,7 +49,7 @@ class PaintComponent implements OnInit {
 
     // tools: pen popup
     context
-      .callMethod(r'$', ['.tools .pen'])
+      .callMethod(r'$', ['.tools .button.pen'])
       .callMethod('popup', [new JsObject.jsify({
         'popup': context.callMethod(r'$', ['.pen.popup']),
         'on': 'click',
@@ -62,7 +59,7 @@ class PaintComponent implements OnInit {
 
     // tools: rubber popup
     context
-      .callMethod(r'$', ['.tools .rubber'])
+      .callMethod(r'$', ['.tools .button.rubber'])
       .callMethod('popup', [new JsObject.jsify({
         'popup': context.callMethod(r'$', ['.pen.popup']),
         'on': 'click',
@@ -73,7 +70,7 @@ class PaintComponent implements OnInit {
 
     // tools: gradient popup
     context
-      .callMethod(r'$', ['.tools .gradient'])
+      .callMethod(r'$', ['.tools .button.gradient'])
       .callMethod('popup', [new JsObject.jsify({
         'popup': context.callMethod(r'$', ['.gradient.popup']),
         'on': 'click',
@@ -95,16 +92,18 @@ class PaintComponent implements OnInit {
 
     // initialize all checkboxes
     context
-        .callMethod(r'$', ['.ui.checkbox'])
-        .callMethod('checkbox');
+      .callMethod(r'$', ['.ui.checkbox'])
+      .callMethod('checkbox');
 
     // initialize gradient chooser
-    var gradientChooser = new JsObject(context['Grapick'], [new JsObject.jsify({
+    gradientChooser = new JsObject(context['Grapick'], [new JsObject.jsify({
       'el': '.tools .gradient.popup',
       'width': '200px'
-    })]);
-    gradientChooser.callMethod('addHandler', [0, 'red']);
-    gradientChooser.callMethod('addHandler', [100, 'blue']);
+    })])
+      ..callMethod('addHandler', [0, '#ffffff'])
+      ..callMethod('addHandler', [100, '#000000'])
+      ..callMethod('on', ['change', new JsFunction.withThis(gradientUpdateIcon)]);
+    gradientChooser.callMethod('emit', ['change']);
 
     // add input listeners
     querySelector('body')
@@ -202,6 +201,8 @@ class PaintComponent implements OnInit {
         var importTool = querySelector("#import-tool");
         if (factor < 1) {
           importTool.style
+            ..left = '${canvas.canvas.documentOffset.x}px'
+            ..top = '${canvas.canvas.documentOffset.y}px'
             ..width = '${image.width * factor}px'
             ..height = '${image.height * factor}px';
         }
@@ -231,6 +232,8 @@ class PaintComponent implements OnInit {
     event.preventDefault();
     var importTool = querySelector("#import-tool");
     importTool.style
+      ..left = '${importTool.documentOffset.x - event.deltaY / 2 * -.1}px'
+      ..top = '${importTool.documentOffset.y - event.deltaY / 2 * -.1}px'
       ..width = '${importTool.offsetWidth + event.deltaY * -.1}px'
       ..height = '${importTool.offsetHeight + event.deltaY * -.1}px';
   }
@@ -339,12 +342,18 @@ class PaintComponent implements OnInit {
         case 'gradient':
           if (!querySelector('#gradient-tool').classes.contains('hidden')) {
             querySelector('#gradient-tool').classes.add('hidden');
-            var inputs = querySelectorAll('.tools .gradient.popup input[type="color"]');
-            List<Color> colors = [];
-            for (InputElement input in inputs) {
-              colors.add(new Color.fromHex(input.value));
+
+            var values = gradientChooser.callMethod('getHandlers');
+
+            var colors = [];
+            for (var value in values) {
+              colors.add({
+                'position': value.callMethod('getPosition') / 100,
+                'color': value.callMethod('getColor') as String
+              });
             }
-            canvas.gradient(gradientPoints, colors, markRect);
+
+            canvas.gradient(gradientPoints, colors, getMark());
           }
           break;
       }
@@ -516,7 +525,7 @@ class PaintComponent implements OnInit {
 
   void fill() {
     var rect = getMark();
-    canvas.fill(rect, color);
+    canvas.fillRect(rect, color);
   }
 
   void filter(String filterName, [Map options]) {
@@ -616,5 +625,10 @@ class PaintComponent implements OnInit {
         }
         break;
     }
+  }
+
+  gradientUpdateIcon() {
+    var icon = querySelector('.tools>.gradient>i');
+    icon.style.backgroundImage = gradientChooser.callMethod('getSafeValue');
   }
 }

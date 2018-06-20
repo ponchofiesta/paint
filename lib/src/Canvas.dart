@@ -62,10 +62,79 @@ class Canvas {
     return ctx.measureText(text).width;
   }
 
-  void fill(Rectangle rect, Color color) {
+  void fillRect(Rectangle rect, Color color) {
     ctx
       ..fillStyle = color.toRgba()
       ..fillRect(rect.left, rect.top, rect.width, rect.height);
+  }
+
+  void fill(Point position, Rectangle rect) {
+
+    var newPos,
+        x,
+        y,
+        pixelPos,
+        reachLeft,
+        reachRight,
+        drawingBoundLeft = rect.left,
+        drawingBoundTop = rect.top,
+        drawingBoundRight = rect.left + rect.width - 1,
+        drawingBoundBottom = rect.top + rect.height - 1,
+        pixelStack = [[position.x, position.y]];
+
+    while (pixelStack.length > 0) {
+
+      newPos = pixelStack.removeAt(0);
+      x = newPos[0];
+      y = newPos[1];
+
+      // Get current pixel position
+      pixelPos = (y * rect.width + x) * 4;
+
+      // Go up as long as the color matches and are inside the canvas
+      while (y >= drawingBoundTop && matchStartColor(pixelPos, startR, startG, startB)) {
+        y -= 1;
+        pixelPos -= rect.width * 4;
+      }
+
+      pixelPos += canvasWidth * 4;
+      y += 1;
+      reachLeft = false;
+      reachRight = false;
+
+      // Go down as long as the color matches and in inside the canvas
+      while (y <= drawingBoundBottom && matchStartColor(pixelPos, startR, startG, startB)) {
+        y += 1;
+
+        colorPixel(pixelPos, curColor.r, curColor.g, curColor.b);
+
+        if (x > drawingBoundLeft) {
+          if (matchStartColor(pixelPos - 4, startR, startG, startB)) {
+            if (!reachLeft) {
+              // Add pixel to stack
+              pixelStack.push([x - 1, y]);
+              reachLeft = true;
+            }
+          } else if (reachLeft) {
+            reachLeft = false;
+          }
+        }
+
+        if (x < drawingBoundRight) {
+          if (matchStartColor(pixelPos + 4, startR, startG, startB)) {
+            if (!reachRight) {
+              // Add pixel to stack
+              pixelStack.push([x + 1, y]);
+              reachRight = true;
+            }
+          } else if (reachRight) {
+            reachRight = false;
+          }
+        }
+
+        pixelPos += rect.width * 4;
+      }
+    }
   }
 
   void filter(Rectangle rect, String filterName, [Object options]) {
@@ -118,10 +187,10 @@ class Canvas {
     _mouseLastPosition = position;
   }
 
-  void gradient(List<Point> points, List<Color> colors, Rectangle rect) {
+  void gradient(List<Point> points, List colors, Rectangle rect) {
     var gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[1].x, points[1].y);
-    for (var i = 0; i < colors.length; i++) {
-      gradient.addColorStop(i / (colors.length - 1), colors[i].toRgba());
+    for (var color in colors) {
+      gradient.addColorStop(color['position'], color['color']);
     }
     ctx.fillStyle = gradient;
     ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
