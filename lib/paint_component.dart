@@ -23,9 +23,9 @@ class PaintComponent implements OnInit {
 
   Canvas canvas;
 
+  String activeTool = 'mark';
   int penSize = 10;
   int filterSize = 10;
-  String activeTool = 'mark';
   bool isToolShown = false;
   Color color = new Color(0, 0, 0, 255);
   Point mousePosition = new Point(0, 0);
@@ -38,7 +38,7 @@ class PaintComponent implements OnInit {
   String fontStyle = '';
   String fontWeight = '';
   Point importMouseOffset;
-  var gradientChooser;
+  var gradientChooser; // JS Grapick: https://github.com/artf/grapick
 
 
   @override
@@ -113,6 +113,23 @@ class PaintComponent implements OnInit {
 
   }
 
+  /**
+   * Switch the tool
+   */
+  void setTool(String tool) {
+    if (tool != 'gradient') {
+      querySelector('#mark-tool').classes.add('hidden');
+    }
+    querySelector('#text-tool').classes.add('hidden');
+    querySelector('#import-tool').classes.add('hidden');
+    activeTool = tool;
+  }
+
+  // Image creation and saving ---------------------------------------------
+
+  /**
+   * Show dialog for new image
+   */
   void newImage() {
     context
         .callMethod(r'$', ['#new-image-modal'])
@@ -126,6 +143,9 @@ class PaintComponent implements OnInit {
         .callMethod('modal', ['show']);
   }
 
+  /**
+   * Place a canvas to the work area
+   */
   void addCanvas(CanvasElement newCanvas) {
     var canvasDiv = querySelector("div.canvas");
     newCanvas
@@ -137,6 +157,9 @@ class PaintComponent implements OnInit {
     this.canvas = new Canvas(newCanvas);
   }
 
+  /**
+   * Create a new empty image by size or open one
+   */
   void createImage({num width, num height}) {
     if (width == null || height == null) {
       // open image file
@@ -154,6 +177,9 @@ class PaintComponent implements OnInit {
     }
   }
 
+  /**
+   * Open a image file
+   */
   void openImage(Function callback(ImageElement image)) {
     InputElement input = document.createElement('input');
     input.accept = 'image/x-png,image/gif,image/jpeg';
@@ -167,6 +193,9 @@ class PaintComponent implements OnInit {
     input.click();
   }
 
+  /**
+   * Save canvas to image file
+   */
   void saveImage([Event event]) {
     if (event != null) {
       event.preventDefault();
@@ -181,6 +210,7 @@ class PaintComponent implements OnInit {
           canvas.toBlob((blob) {
             AnchorElement a = document.createElement('a');
             a.classes.add('hidden');
+            a.target = '_blank';
             a.href = Url.createObjectUrlFromBlob(blob);
             querySelector('body').append(a);
             a.click();
@@ -191,6 +221,11 @@ class PaintComponent implements OnInit {
       .callMethod('modal', ['show']);
   }
 
+  // Import -------------------------------------------------------------
+
+  /**
+   * Import a image file and place it on top of the canvas
+   */
   void importImage() {
     setTool('import');
     openImage((ImageElement image) {
@@ -212,6 +247,7 @@ class PaintComponent implements OnInit {
       });
     });
   }
+
 
   void importMouseDown(MouseEvent event) {
     event.preventDefault();
@@ -238,6 +274,9 @@ class PaintComponent implements OnInit {
       ..height = '${importTool.offsetHeight + event.deltaY * -.1}px';
   }
 
+  /**
+   * Import: Insert the preview image to the canvas
+   */
   void importInsert() {
     var importTool = querySelector('#import-tool');
     if (!importTool.classes.contains('hidden')) {
@@ -255,14 +294,7 @@ class PaintComponent implements OnInit {
     }
   }
 
-  void setTool(String tool) {
-    if (tool != 'gradient') {
-      querySelector('#mark-tool').classes.add('hidden');
-    }
-    querySelector('#text-tool').classes.add('hidden');
-    querySelector('#import-tool').classes.add('hidden');
-    activeTool = tool;
-  }
+  // Mark tool ---------------------------------------------------------------
 
   void markMouseDownCanvas(MouseEvent event) {
     var markTool = querySelector('#mark-tool');
@@ -281,6 +313,71 @@ class PaintComponent implements OnInit {
       markTool.classes.add('hidden');
     }
   }
+
+  void markSet(MouseEvent event) {
+    var markTool = querySelector('#mark-tool');
+    if (markTool.classes.contains('hidden')) {
+      return;
+    }
+
+    var left = 0;
+    var top = 0;
+    var width = 0;
+    var height = 0;
+
+    // set border limits for marker
+    if (event.client.x < markPositionStart.x) {
+      if (event.client.x < canvas.canvas.documentOffset.x) {
+        left = canvas.canvas.documentOffset.x;
+        width = markPositionStart.x - canvas.canvas.documentOffset.x;
+      } else {
+        left = event.client.x;
+        width = markPositionStart.x - event.client.x;
+      }
+    } else {
+      if (event.client.x > canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth) {
+        left = markPositionStart.x;
+        width = canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth - markPositionStart.x;
+      } else {
+        left = markPositionStart.x;
+        width = event.client.x - markPositionStart.x;
+      }
+    }
+    if (event.client.y < markPositionStart.y) {
+      if (event.client.y < canvas.canvas.documentOffset.y) {
+        top = canvas.canvas.documentOffset.y;
+        height = markPositionStart.y - canvas.canvas.documentOffset.y;
+      } else {
+        top = event.client.y;
+        height = markPositionStart.y - event.client.y;
+      }
+    } else {
+      if (event.client.y > canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight) {
+        top = markPositionStart.y;
+        height = canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight - markPositionStart.y;
+      } else {
+        top = markPositionStart.y;
+        height = event.client.y - markPositionStart.y;
+      }
+    }
+
+    // visual marker position
+    markTool.style
+      ..left = '${left}px'
+      ..top = '${top}px'
+      ..width = '${width}px'
+      ..height = '${height}px';
+
+    // rect
+    markRect = new Rectangle(
+        markTool.documentOffset.x - canvas.canvas.documentOffset.x,
+        markTool.documentOffset.y - canvas.canvas.documentOffset.y,
+        markTool.offsetWidth,
+        markTool.offsetHeight
+    );
+  }
+
+  // Main events --------------------------------------------------------------
 
   void mouseDownCanvas(MouseEvent event) {
     if (isToolShown) {
@@ -316,6 +413,10 @@ class PaintComponent implements OnInit {
 
       case 'rubber':
         canvas.rubberStart(mousePosition, penSize);
+        break;
+
+      case 'fill':
+        canvas.fill(mousePosition, color, 10, getMark());
         break;
 
       case 'gradient':
@@ -393,75 +494,17 @@ class PaintComponent implements OnInit {
     }
   }
 
-  void markSet(MouseEvent event) {
-    var markTool = querySelector('#mark-tool');
-    if (markTool.classes.contains('hidden')) {
-      return;
+  void keyPress(KeyboardEvent event) {
+    switch (activeTool) {
+      case 'import':
+        if (event.keyCode == 13) {
+          importInsert();
+        }
+        break;
     }
-
-    var left = 0;
-    var top = 0;
-    var width = 0;
-    var height = 0;
-
-    // set border limits for marker
-    if (event.client.x < markPositionStart.x) {
-      if (event.client.x < canvas.canvas.documentOffset.x) {
-        left = canvas.canvas.documentOffset.x;
-        width = markPositionStart.x - canvas.canvas.documentOffset.x;
-      } else {
-        left = event.client.x;
-        width = markPositionStart.x - event.client.x;
-      }
-    } else {
-      if (event.client.x > canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth) {
-        left = markPositionStart.x;
-        width = canvas.canvas.documentOffset.x + canvas.canvas.offsetWidth - markPositionStart.x;
-      } else {
-        left = markPositionStart.x;
-        width = event.client.x - markPositionStart.x;
-      }
-    }
-    if (event.client.y < markPositionStart.y) {
-      if (event.client.y < canvas.canvas.documentOffset.y) {
-        top = canvas.canvas.documentOffset.y;
-        height = markPositionStart.y - canvas.canvas.documentOffset.y;
-      } else {
-        top = event.client.y;
-        height = markPositionStart.y - event.client.y;
-      }
-    } else {
-      if (event.client.y > canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight) {
-        top = markPositionStart.y;
-        height = canvas.canvas.documentOffset.y + canvas.canvas.offsetHeight - markPositionStart.y;
-      } else {
-        top = markPositionStart.y;
-        height = event.client.y - markPositionStart.y;
-      }
-    }
-
-    // visual marker position
-    markTool.style
-      ..left = '${left}px'
-      ..top = '${top}px'
-      ..width = '${width}px'
-      ..height = '${height}px';
-
-    // rect
-    markRect = new Rectangle(
-      markTool.documentOffset.x - canvas.canvas.documentOffset.x,
-      markTool.documentOffset.y - canvas.canvas.documentOffset.y,
-      markTool.offsetWidth,
-      markTool.offsetHeight
-    );
   }
 
-  Point getMousePositionOnCanvas(MouseEvent event) {
-    return new Point(
-        event.client.x - canvas.canvas.documentOffset.x,
-        event.client.y - canvas.canvas.documentOffset.y
-    );
-  }
+  // Text tool ----------------------------------------------------------------
 
   void textInsert() {
     var textTool = querySelector('#text-tool');
@@ -503,31 +546,25 @@ class PaintComponent implements OnInit {
     onTextChange();
   }
 
-  Rectangle getMark() {
-    var markTool = querySelector('#mark-tool');
-    if (markTool.classes.contains('hidden')) {
-      // no mark, use whole canvas
-      return new Rectangle(
-          0,
-          0,
-          canvas.canvas.offsetWidth,
-          canvas.canvas.offsetHeight
-      );
-    }
-    // marked area
-    return new Rectangle(
-      markTool.documentOffset.x - canvas.canvas.documentOffset.x,
-      markTool.documentOffset.y - canvas.canvas.documentOffset.y,
-      markTool.offsetWidth,
-      markTool.offsetHeight
-    );
-  }
+  // Fill area (rectangle) ----------------------------------------------------
 
   void fill() {
     var rect = getMark();
     canvas.fillRect(rect, color);
   }
 
+  // Delete area (rectangle) --------------------------------------------------
+
+  void delete() {
+    var rect = getMark();
+    canvas.delete(rect);
+  }
+
+  // Filters ------------------------------------------------------------------
+
+  /**
+   * Use a filter by name.
+   */
   void filter(String filterName, [Map options]) {
 
     if (options == null || !(options is Map)) {
@@ -573,6 +610,9 @@ class PaintComponent implements OnInit {
 
   }
 
+  /**
+   * Run a specific filter
+   */
   void filterRun(String filterName, [Rectangle rect, Map options]) {
     try {
       canvas.filter(rect, filterName, options);
@@ -582,21 +622,20 @@ class PaintComponent implements OnInit {
     }
   }
 
-  void delete() {
-    var rect = getMark();
-    canvas.delete(rect);
-  }
+  // Gradient tool -----------------------------------------------------------
 
-  void gradientAddColor() {
-    // TODO implement gradient add color
-  }
-
+  /**
+   * Start a gradient on position
+   */
   void gradientStart(Point position) {
     gradientPoints[0] = new Point(position.x, position.y);
     gradientMove(position);
     querySelector('#gradient-tool').classes.remove('hidden');
   }
 
+  /**
+   * Move second gradient point to position
+   */
   void gradientMove(Point position) {
     gradientPoints[1] = new Point(position.x, position.y);
 
@@ -617,18 +656,47 @@ class PaintComponent implements OnInit {
       ..transform = 'rotate(${angle}deg)';
   }
 
-  void keyPress(KeyboardEvent event) {
-    switch (activeTool) {
-      case 'import':
-        if (event.keyCode == 13) {
-          importInsert();
-        }
-        break;
-    }
-  }
-
+  /**
+   * Fill tool bar icon with the current gradient
+   */
   gradientUpdateIcon() {
     var icon = querySelector('.tools>.gradient>i');
     icon.style.backgroundImage = gradientChooser.callMethod('getSafeValue');
+  }
+
+
+  // Helper -------------------------------------------------------------------
+
+  /**
+   * Get mouse position relative to canvas
+   */
+  Point getMousePositionOnCanvas(MouseEvent event) {
+    return new Point(
+        event.client.x - canvas.canvas.documentOffset.x,
+        event.client.y - canvas.canvas.documentOffset.y
+    );
+  }
+
+  /**
+   * Get marked rectangle or the canvas rectangle
+   */
+  Rectangle getMark() {
+    var markTool = querySelector('#mark-tool');
+    if (markTool.classes.contains('hidden')) {
+      // no mark, use whole canvas
+      return new Rectangle(
+          0,
+          0,
+          canvas.canvas.offsetWidth,
+          canvas.canvas.offsetHeight
+      );
+    }
+    // marked area
+    return new Rectangle(
+        markTool.documentOffset.x - canvas.canvas.documentOffset.x,
+        markTool.documentOffset.y - canvas.canvas.documentOffset.y,
+        markTool.offsetWidth,
+        markTool.offsetHeight
+    );
   }
 }

@@ -11,6 +11,9 @@ import 'package:paint/src/filter/GreyscaleFilter.dart';
 import 'package:paint/src/filter/PixelateFilter.dart';
 import 'package:paint/src/filter/SharpenFilter.dart';
 
+/**
+ * Canvas drawing engine
+ */
 class Canvas {
 
   CanvasElement canvas;
@@ -25,6 +28,9 @@ class Canvas {
     this.ctx = canvas.context2D;
   }
 
+  /**
+   * Start drawing with pen
+   */
   void penStart(Point position, int penSize, Color color) {
     _mouseLastPosition = position;
     _penSize = penSize;
@@ -32,6 +38,9 @@ class Canvas {
     penMove(position);
   }
 
+  /**
+   * Draw a pen line from start to position
+   */
   void penMove(Point position) {
     ctx
       ..beginPath()
@@ -44,11 +53,9 @@ class Canvas {
     _mouseLastPosition = position;
   }
 
-  Color pipette(Point position) {
-    var pixel = ctx.getImageData(position.x, position.y, 1, 1).data;
-    return new Color(pixel[0], pixel[1], pixel[2], pixel[3]);
-  }
-
+  /**
+   * Draw a text
+   */
   void textInsert(String text, Point position, String font, String style, String weight, Color color, int size) {
     ctx
       ..textBaseline = 'top'
@@ -57,91 +64,158 @@ class Canvas {
       ..fillText(text, position.x, position.y);
   }
 
+  /**
+   * Get text length
+   */
   double measureString(String text, String font, String style, String weight, int size) {
     ctx.font = '${style} ${weight} ${size}px ${font}';
     return ctx.measureText(text).width;
   }
 
+  /**
+   * Start the rubber
+   */
+  void rubberStart(Point position, int penSize) {
+    _mouseLastPosition = position;
+    _penSize = penSize;
+    rubberMove(position);
+  }
+
+  /**
+   * Delete from rubber start to position in a line
+   */
+  void rubberMove(Point position) {
+    ctx
+      ..save()
+      ..beginPath()
+      ..globalCompositeOperation = 'destination-out'
+      ..moveTo(_mouseLastPosition.x, _mouseLastPosition.y)
+      ..lineTo(position.x, position.y)
+      ..lineCap = 'round'
+      ..lineWidth = _penSize
+      ..strokeStyle = '#000'
+      ..stroke()
+      ..restore();
+    _mouseLastPosition = position;
+  }
+
+  /**
+   * Draw a gradient
+   */
+  void gradient(List<Point> points, List colors, Rectangle rect) {
+    var gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[1].x, points[1].y);
+    for (var color in colors) {
+      gradient.addColorStop(color['position'], color['color']);
+    }
+    ctx.fillStyle = gradient;
+    ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+  }
+
+  /**
+   * Place a image on the canvas
+   */
+  void importImage(ImageElement image, Rectangle rect) {
+    ctx.drawImageScaled(image, rect.left, rect.top, rect.width, rect.height);
+  }
+
+  /**
+   * Delete a rectangle
+   */
+  void delete(Rectangle rect) {
+    ctx.clearRect(rect.left, rect.top, rect.width, rect.height);
+  }
+
+  /**
+   * Fill a rectangle
+   */
   void fillRect(Rectangle rect, Color color) {
     ctx
       ..fillStyle = color.toRgba()
       ..fillRect(rect.left, rect.top, rect.width, rect.height);
   }
 
-  void fill(Point position, Rectangle rect) {
+  /**
+   * Fill all pixels around a position having the same color
+   */
+  void fill(Point position, Color color, int tolerance, Rectangle rect) {
 
-    var newPos,
-        x,
-        y,
-        pixelPos,
-        reachLeft,
-        reachRight,
-        drawingBoundLeft = rect.left,
-        drawingBoundTop = rect.top,
-        drawingBoundRight = rect.left + rect.width - 1,
-        drawingBoundBottom = rect.top + rect.height - 1,
-        pixelStack = [[position.x, position.y]];
+    var imgData = ctx.getImageData(rect.left, rect.top, rect.width, rect.height);
+    var points = [position];
+    Point point;
+    var seen = new Map<String, bool>();
+    var steps = [[1, 0], [0, 1], [0, -1], [-1, 0]];
+    String key;
+    int index;
+    int i;
+    int x2;
+    int y2;
 
-    while (pixelStack.length > 0) {
+    tolerance = tolerance.abs();
 
-      newPos = pixelStack.removeAt(0);
-      x = newPos[0];
-      y = newPos[1];
+    // color of the selected pixel
+    index = 4 * (position.y * rect.width + position.x);
+    Color targetColor = new Color(
+        imgData.data[index],
+        imgData.data[index + 1],
+        imgData.data[index + 2],
+        imgData.data[index + 3]
+    );
 
-      // Get current pixel position
-      pixelPos = (y * rect.width + x) * 4;
+    // walk over all pixels in queue
+    while(points.length > 0) {
 
-      // Go up as long as the color matches and are inside the canvas
-      while (y >= drawingBoundTop && matchStartColor(pixelPos, startR, startG, startB)) {
-        y -= 1;
-        pixelPos -= rect.width * 4;
+      point = points.removeLast();
+      index = 4 * (point.y * rect.width + point.x);
+
+      // compare pixels. skip this pixel if not equal
+      if((imgData.data[index] - targetColor.r).abs() > tolerance
+          || (imgData.data[index + 1] - targetColor.g).abs() > tolerance
+          || (imgData.data[index + 2] - targetColor.b).abs() > tolerance
+          || (imgData.data[index + 3] - targetColor.a).abs() > tolerance
+      ) {
+        continue;
       }
 
-      pixelPos += canvasWidth * 4;
-      y += 1;
-      reachLeft = false;
-      reachRight = false;
+      // Look to each side of the pixel
+      i = steps.length;
+      while(i-- > 0) {
 
-      // Go down as long as the color matches and in inside the canvas
-      while (y <= drawingBoundBottom && matchStartColor(pixelPos, startR, startG, startB)) {
-        y += 1;
+        // fill the current pixel
+        imgData.data[index] = color.r;
+        imgData.data[index + 1] = color.g;
+        imgData.data[index + 2] = color.b;
+        imgData.data[index + 3] = color.a;
 
-        colorPixel(pixelPos, curColor.r, curColor.g, curColor.b);
+        // next pixel
+        x2 = point.x + steps[i][0];
+        y2 = point.y + steps[i][1];
+        key = '${x2},${y2}';
 
-        if (x > drawingBoundLeft) {
-          if (matchStartColor(pixelPos - 4, startR, startG, startB)) {
-            if (!reachLeft) {
-              // Add pixel to stack
-              pixelStack.push([x - 1, y]);
-              reachLeft = true;
-            }
-          } else if (reachLeft) {
-            reachLeft = false;
-          }
+        // if new pixel in range and not already checked, add to list
+        if(x2 < 0 || y2 < 0 || x2 >= rect.width || y2 >= rect.height || seen.containsKey(key) && seen[key]) {
+          continue;
         }
+        points.add(new Point(x2, y2 ));
 
-        if (x < drawingBoundRight) {
-          if (matchStartColor(pixelPos + 4, startR, startG, startB)) {
-            if (!reachRight) {
-              // Add pixel to stack
-              pixelStack.push([x + 1, y]);
-              reachRight = true;
-            }
-          } else if (reachRight) {
-            reachRight = false;
-          }
-        }
-
-        pixelPos += rect.width * 4;
+        // current pixel is done
+        seen[key] = true;
       }
     }
+
+    ctx.putImageData(imgData, rect.left, rect.top);
   }
 
+  /**
+   * Use a filter
+   */
   void filter(Rectangle rect, String filterName, [Object options]) {
     var filter = getFilter(filterName);
     filter.use(rect, options);
   }
 
+  /**
+   * Filter generator (something like a factory)
+   */
   AbstractFilter getFilter(String filterName) {
     switch (filterName) {
       case 'greyscale':
@@ -162,42 +236,12 @@ class Canvas {
     throw new Exception("Filter not found");
   }
 
-  void delete(Rectangle rect) {
-    ctx.clearRect(rect.left, rect.top, rect.width, rect.height);
-  }
-
-  void rubberStart(Point position, int penSize) {
-    _mouseLastPosition = position;
-    _penSize = penSize;
-    rubberMove(position);
-  }
-
-  void rubberMove(Point position) {
-    ctx
-      ..save()
-      ..beginPath()
-      ..globalCompositeOperation = 'destination-out'
-      ..moveTo(_mouseLastPosition.x, _mouseLastPosition.y)
-      ..lineTo(position.x, position.y)
-      ..lineCap = 'round'
-      ..lineWidth = _penSize
-      ..strokeStyle = '#000'
-      ..stroke()
-      ..restore();
-    _mouseLastPosition = position;
-  }
-
-  void gradient(List<Point> points, List colors, Rectangle rect) {
-    var gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[1].x, points[1].y);
-    for (var color in colors) {
-      gradient.addColorStop(color['position'], color['color']);
-    }
-    ctx.fillStyle = gradient;
-    ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-  }
-
-  void importImage(ImageElement image, Rectangle rect) {
-    ctx.drawImageScaled(image, rect.left, rect.top, rect.width, rect.height);
+  /**
+   * Get color on position
+   */
+  Color pipette(Point position) {
+    var pixel = ctx.getImageData(position.x, position.y, 1, 1).data;
+    return new Color(pixel[0], pixel[1], pixel[2], pixel[3]);
   }
 
 }

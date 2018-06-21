@@ -210,29 +210,6 @@
 <div id="mark-tool" class="hidden"></div>
 
 
-<!-- Gradient tool -->
-
-<div class="ui mini modal" id="gradient-tool-modal">
-    <div class="header">Gradient tool</div>
-    <div class="content">
-        <form class="ui form">
-            <div class="field">
-                <label>Colors</label>
-                <input class="ui basic icon button color" type="color" name="color[]" [value]="color.toRgba()">
-                <input class="ui basic icon button color" type="color" name="color[]">
-            </div>
-            <div class="field">
-                <button type="button" (click)="gradientAddColor()">Add color</button>
-            </div>
-        </form>
-    </div>
-    <div class="actions">
-        <div class="ui primary approve button">Approve</div>
-        <div class="ui cancel button">Cancel</div>
-    </div>
-</div>
-
-
 <!-- Import tool -->
 
 <div id="import-tool" class="hidden"
